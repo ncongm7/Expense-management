@@ -1,0 +1,25 @@
+# 👉 IGNORE FOR FRONTEND (Vue.js)
+font-end/node_modules/
+font-end/dist/
+font-end/.env.local
+font-end/.env
+
+# 👉 IGNORE FOR BACKEND (Spring Boot)
+back-end/target/
+back-end/.mvn/
+back-end/.idea/
+back-end/.classpath
+back-end/.project
+back-end/.settings/
+
+# 👉 IGNORE COMMON
+.DS_Store
+*.log
+*.iml
+*.class
+*.jar
+
+# Optional: OS & editor
+.vscode/
+*.swp
+Thumbs.db
