@@ -34,8 +34,8 @@ const toggleForm = () => {
  */
 const handleLoginSuccess = (userData) => {
     toast.success('Chào mừng bạn trở lại!');
-    // Chuyển hướng về trang GiaoDich
     router.push('/giaodich');
+    window.location.reload();
 };
 
 /**

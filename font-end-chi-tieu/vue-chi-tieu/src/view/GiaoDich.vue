@@ -4,59 +4,31 @@
     <TransactionForm :categories="categories" @transaction-added="handleTransactionAdded" />
 
     <!-- Bộ lọc và tìm kiếm -->
-    <TransactionFilter
-      :categories="categories"
-      :filters="filters"
-      @filter-changed="handleFilterChanged"
-      @reset-filters="resetFilters"
-      @refresh-data="fetchTransactions"
-    />
+    <TransactionFilter :categories="categories" :filters="filters" @filter-changed="handleFilterChanged"
+      @reset-filters="resetFilters" @refresh-data="fetchTransactions" />
 
     <!-- Tổng hợp số tiền -->
     <TransactionSummary :transactions="filteredTransactions" />
 
     <!-- Danh sách giao dịch -->
-    <TransactionTable
-      :transactions="filteredTransactions"
-      :page-size="pageSize"
-      @show-detail="showDetail"
-      @show-receipt="showReceipt"
-      @edit-transaction="editTransaction"
-      @delete-transaction="confirmDelete"
-      @download-excel="downloadExcel"
-    />
+    <TransactionTable :transactions="filteredTransactions" :page-size="pageSize" @show-detail="showDetail"
+      @show-receipt="showReceipt" @edit-transaction="editTransaction" @delete-transaction="confirmDelete"
+      @download-excel="downloadExcel" />
 
     <!-- Biểu đồ chi tiêu -->
     <TransactionChart :transactions="filteredTransactions" />
 
     <!-- Các modal được teleport để tránh lỗi aria-hidden -->
-    <TransactionDetailModal
-      :transaction="selectedTransaction"
-      :show="showDetailModal"
-      @close="showDetailModal = false"
-      @show-receipt="showReceipt"
-    />
+    <TransactionDetailModal :transaction="selectedTransaction" :show="showDetailModal" @close="showDetailModal = false"
+      @show-receipt="showReceipt" />
 
-    <ReceiptViewModal
-      :receipt-url="receiptUrl"
-      :show="showReceiptModal"
-      @close="showReceiptModal = false"
-    />
+    <ReceiptViewModal :receipt-url="receiptUrl" :show="showReceiptModal" @close="showReceiptModal = false" />
 
-    <TransactionDeleteModal
-      :transaction="transactionToDelete"
-      :show="showDeleteModal"
-      @transaction-deleted="deleteTransaction"
-      @close="showDeleteModal = false"
-    />
+    <TransactionDeleteModal :transaction="transactionToDelete" :show="showDeleteModal"
+      @transaction-deleted="deleteTransaction" @close="showDeleteModal = false" />
 
-    <TransactionEditModal
-      :transaction="transactionToEdit"
-      :categories="categories"
-      :show="showEditModal"
-      @transaction-updated="submitEdit"
-      @close="showEditModal = false"
-    />
+    <TransactionEditModal :transaction="transactionToEdit" :categories="categories" :show="showEditModal"
+      @transaction-updated="submitEdit" @close="showEditModal = false" />
   </div>
 </template>
 
@@ -132,7 +104,7 @@ const handleFilterChanged = (newFilters) => {
 
 const handleTransactionAdded = async (formData) => {
   try {
-    await axios.post('http://localhost:8080/transactions/post', formData);
+    await axios.post('https://expense-backend.up.railway.app/transactions/post', formData);
     fetchTransactions();
     toast.success("Thêm giao dịch thành công!");
   } catch (err) {
@@ -218,6 +190,7 @@ onMounted(() => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

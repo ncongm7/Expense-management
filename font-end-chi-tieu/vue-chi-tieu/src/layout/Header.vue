@@ -94,6 +94,7 @@ const handleLogout = () => {
     authService.logout()
     toast.success('Đã đăng xuất thành công!')
     router.push('/login')
+    window.location.reload()
 }
 
 /**
