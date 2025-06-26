@@ -3,7 +3,7 @@ import authService from './authService.js';
 
 // Tạo instance axios với base URL
 const apiClient = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://expense-backend.up.railway.app',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -34,11 +34,11 @@ apiClient.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             // Xóa thông tin user và token
             authService.logout();
-            
+
             // Emit custom event để Vue app có thể handle
             window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
-        
+
         return Promise.reject(error);
     }
 );
