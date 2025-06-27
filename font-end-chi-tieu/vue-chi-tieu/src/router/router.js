@@ -16,7 +16,7 @@ const routes = [
     path: '/',
     redirect: (to) => {
       // Redirect dựa trên trạng thái đăng nhập
-      return authService.isLoggedIn() ? '/muctieu' : '/login'
+      return authService.isLoggedIn() ? '/overview' : '/login'
     }
   },
   {
@@ -100,7 +100,7 @@ router.beforeEach((to, from, next) => {
   else if (to.meta.requiresGuest) {
     if (isLoggedIn) {
       // Đã đăng nhập -> chuyển về trang chính
-      next('/muctieu')
+      next('/overview')
     } else {
       // Chưa đăng nhập -> cho phép truy cập login
       next()
