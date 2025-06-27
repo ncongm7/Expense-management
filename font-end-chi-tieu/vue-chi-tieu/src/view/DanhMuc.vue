@@ -1,5 +1,6 @@
 <template>
     <div class="danhmuc-container">
+             
         <form @submit.prevent="handleSubmit" class="form-card">
             <h2 class="form-title">Thêm Danh Mục</h2>
             <div class="form-group">
@@ -20,12 +21,9 @@
                     <emoji-picker @emoji-click="onEmojiClick" />
                 </div>
             </div>
-            <div class="form-group">
-                <label>User ID</label>
-                <input v-model.number="form.userId" type="number" required class="input" placeholder="Nhập User ID" />
-            </div>
             <button type="submit" class="btn-submit">Lưu danh mục</button>
         </form>
+        
 
         <div class="table-section">
             <h3 class="table-title">Danh sách Danh Mục</h3>
@@ -56,40 +54,45 @@
     </div>
 </template>
 
+// ...existing code...
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from 'axios'
-import 'emoji-picker-element' // ✅ Import duy nhất cần để dùng emoji-picker
+import 'emoji-picker-element'
+import CategoryService from '../service/categoryService'
 
 const form = ref({
     name: '',
-    icon: '',
-    user: {
-        id: 1
-    }
-
+    icon: ''
 })
 const categories = ref([])
 const showEmoji = ref(false)
 
 const fetchCategories = async () => {
     try {
-        const response = await axios.get('http://localhost:8080/categories/hien-thi')
-        categories.value = response.data
+        const response = await CategoryService.getCategories()
+        categories.value = Array.isArray(response) ? response : (response.data || [])
     } catch (err) {
-        console.error('Lỗi lấy danh sách danh mục:', err)
+        categories.value = []
     }
 }
 
 const handleSubmit = async () => {
     try {
-        await axios.post('http://localhost:8080/categories/them', form.value)
+        const user = JSON.parse(localStorage.getItem('user'))
+        const userId = user?.id
+        if (!userId) {
+            alert('Không tìm thấy thông tin người dùng!')
+            return
+        }
+        const data = {
+            ...form.value,
+            user: { id: userId }
+        }
+        await CategoryService.createCategory(data)
         alert('Danh mục đã được lưu!')
-        form.value = { name: '', icon: '', user: { id: 1 } }
-
+        form.value = { name: '', icon: '' }
         fetchCategories()
     } catch (err) {
-        console.error('Lỗi lưu danh mục:', err)
         alert('Không thể lưu danh mục.')
     }
 }
@@ -116,6 +119,7 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside)
 })
 </script>
+// ...existing code...
 
 
 <style scoped>

@@ -15,11 +15,12 @@ class TransactionService {
         console.log(filters);
 
 
-
-
-
         try {
-            const response = await apiClient.get('/transactions/hien-thi', {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userId = user?.id;
+            console.log(userId);
+            
+            const response = await apiClient.get(`/transactions/hien-thi/${userId}`, {
                 params: {
                     type: filters?.type || null,
                     categoryId: filters?.categoryId || null,
@@ -78,7 +79,7 @@ class TransactionService {
      */
     async updateTransaction(id, transactionData) {
         try {
-            const response = await apiClient.put(`/transactions/${id}`, transactionData);
+            const response = await apiClient.put(`/transactions/update/${id}`, transactionData);
             return response.data;
         } catch (error) {
             console.error('Lỗi cập nhật giao dịch:', error);
@@ -93,7 +94,7 @@ class TransactionService {
      */
     async deleteTransaction(id) {
         try {
-            await apiClient.delete(`/transactions/${id}`);
+            await apiClient.delete(`/transactions/delete/${id}`);
             return true;
         } catch (error) {
             console.error('Lỗi xóa giao dịch:', error);

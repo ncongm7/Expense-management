@@ -35,7 +35,7 @@
                                 {{ gd.amount.toLocaleString('vi-VN') }} ₫
                             </td>
                             <td>{{ gd.categoryName || '---' }}</td>
-                            <td :class="!gd.note ? 'text-muted fst-italic' : ''">{{ gd.notes || '-' }}</td>
+                            <td :class="!gd.note ? 'text-muted fst-italic' : ''">{{ gd.note || '-' }}</td>
                             <td>{{ formatDate(gd.spentAt) }}</td>
                             <!-- <td>
                                     <span v-if="gd.receiptUrl">

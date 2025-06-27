@@ -18,7 +18,7 @@
                             <b>Danh mục:</b> {{ transaction.categoryName }}
                         </li>
                         <li class="list-group-item">
-                            <b>Ghi chú:</b> {{ transaction.notes || '-' }}
+                            <b>Ghi chú:</b> {{ transaction.note || '-' }}
                         </li>
                         <li class="list-group-item">
                             <b>Ngày:</b> {{ formatDate(transaction.spentAt) }}

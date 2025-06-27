@@ -5,7 +5,7 @@ import apiClient from './axiosConfig.js';
  * Chứa các function CRUD cho categories
  */
 class CategoryService {
-    
+
     /**
      * Lấy danh sách danh mục
      * @param {Object} filters - Bộ lọc (type, search)
@@ -13,7 +13,10 @@ class CategoryService {
      */
     async getCategories(filters = {}) {
         try {
-            const response = await apiClient.get('/categories/hien-thi', {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userId = user?.id;
+            console.log('Lấy danh sách danh mục cho người dùng:', userId, 'với bộ lọc:', filters);
+            const response = await apiClient.get(`/categories/hien-thi/${userId}`, {
                 params: filters
             });
             return response.data;
@@ -45,7 +48,7 @@ class CategoryService {
      */
     async createCategory(categoryData) {
         try {
-            const response = await apiClient.post('/categories', categoryData);
+            const response = await apiClient.post('/categories/add', categoryData);
             return response.data;
         } catch (error) {
             console.error('Lỗi tạo danh mục:', error);
