@@ -1,9 +1,9 @@
 <template>
     <div class="goal-card shadow rounded-4 p-3 position-relative">
-        <img :src="goal.image || defaultImage" class="goal-image mb-2" alt="goal" />
-        <h5 class="fw-bold mb-1 text-center">{{ goal.name }}</h5>
-        <div class="mb-2 text-muted small text-center">{{ goal.startDate }} - {{ goal.endDate }}</div>
-        <GoalProgress :amount="goal.amount" :actualAmount="goal.saved" />
+        <img :src="goal.urlImage || defaultImage" class="goal-image mb-2" alt="goal" />
+        <h5 class="fw-bold mb-1 text-center">{{ goal.title }}</h5>
+        <div class="mb-2 text-muted small text-center">{{ goal.createdAt }} - {{ goal.deadline }}</div>
+        <GoalProgress :amount="goal.targetAmount" :actualAmount="goal.currentAmount" />
         <div class="d-flex justify-content-between align-items-center mt-2">
             <span :class="['badge', statusClass]">{{ statusText }}</span>
             <div>
@@ -19,19 +19,20 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import GoalProgress from './GoalProgress.vue'
 const props = defineProps({
     goal: { type: Object, required: true }
 })
 const defaultImage = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' // icon mặc định
 const statusClass = computed(() => {
-    if (props.goal.saved >= props.goal.amount) return 'bg-success text-white'
-    if (new Date(props.goal.endDate) < new Date() && props.goal.saved < props.goal.amount) return 'bg-danger text-white'
+    if (props.goal.currentAmount >= props.goal.targetAmount) return 'bg-success text-white'
+    if (new Date(props.goal.deadline) < new Date() && props.goal.currentAmount < props.goal.targetAmount) return 'bg-danger text-white'
     return 'bg-warning text-dark'
 })
 const statusText = computed(() => {
-    if (props.goal.saved >= props.goal.amount) return 'Hoàn thành'
-    if (new Date(props.goal.endDate) < new Date() && props.goal.saved < props.goal.amount) return 'Quá hạn'
+    if (props.goal.currentAmount >= props.goal.targetAmount) return 'Hoàn thành'
+    if (new Date(props.goal.deadline) < new Date() && props.goal.currentAmount < props.goal.targetAmount) return 'Quá hạn'
     return 'Đang thực hiện'
 })
 </script>

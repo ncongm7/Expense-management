@@ -1,7 +1,9 @@
 import axios from './axiosConfig'
 export default {
     async getGoals() {
-        const res = await axios.get('/goals')
+        const user = JSON.parse(localStorage.getItem('user'))
+        const userId = user?.id 
+        const res = await axios.get(`/goals/hien-thi/${userId}`)
         return res.data
     },
     async addGoal(goal) {
@@ -11,6 +13,6 @@ export default {
         return axios.put(`/goals/${goal.id}`, goal)
     },
     async deleteGoal(id) {
-        return axios.delete(`/goals/${id}`)
+        return axios.delete(`/goals/delete/${id}`)
     }
 } 
