@@ -4,10 +4,11 @@ import authService from './authService.js';
 // Tạo instance axios với base URL
 const apiClient = axios.create({
     baseURL: 'https://expense-backend.up.railway.app',
+    // baseURL: 'http://localhost:8080',
     timeout: 10000,
-    headers: {
-        'Content-Type': 'application/json',
-    }
+    // headers: {
+    //     'Content-Type': 'application/json',
+    // }
 });
 
 // Request interceptor - tự động thêm token vào header

@@ -46,6 +46,7 @@ import TransactionEditModal from '../components/giaodich/TransactionEditModal.vu
 import TransactionDeleteModal from '../components/giaodich/TransactionDeleteModal.vue';
 import ReceiptViewModal from '../components/giaodich/ReceiptViewModal.vue';
 import axios from 'axios';
+import apiClient from '@/service/axiosConfig.js';
 
 const categories = ref([]);
 const transactions = ref([]);
@@ -101,7 +102,7 @@ const handleFilterChanged = (newFilters) => {
 
 const handleTransactionAdded = async (formData) => {
   try {
-    await axios.post('https://expense-backend.up.railway.app/transactions/post', formData);
+    await apiClient.post('/transactions/post', formData);
     fetchTransactions();
     toast.success("Thêm giao dịch thành công!");
   } catch (err) {
