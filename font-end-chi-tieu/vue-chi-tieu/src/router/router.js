@@ -8,59 +8,68 @@ import MucTieu from '../view/MucTieu.vue'
 import BaoCao from '../view/BaoCao.vue'
 import CaiDat from '../view/CaiDat.vue'
 import Login from '../view/Login.vue'
+import Overview from '../view/Overview.vue'
+
 
 const routes = [
-  { 
-    path: '/', 
+  {
+    path: '/',
     redirect: (to) => {
       // Redirect dựa trên trạng thái đăng nhập
-      return authService.isLoggedIn() ? '/giaodich' : '/login'
+      return authService.isLoggedIn() ? '/overview' : '/login'
     }
   },
-  { 
-    path: '/login', 
-    name: 'Login', 
+  {
+    path: '/login',
+    name: 'Login',
     component: Login,
     meta: { requiresGuest: true } // Chỉ cho phép guest truy cập
   },
-  { 
-    path: '/giaodich', 
-    name: 'GiaoDich', 
+  {
+    path: '/giaodich',
+    name: 'GiaoDich',
     component: GiaoDich,
     meta: { requiresAuth: true } // Yêu cầu đăng nhập
   },
-  { 
-    path: '/danhmuc', 
-    name: 'DanhMuc', 
+  {
+    path: '/danhmuc',
+    name: 'DanhMuc',
     component: DanhMuc,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/ngansach', 
-    name: 'NganSach', 
+  {
+    path: '/ngansach',
+    name: 'NganSach',
     component: NganSach,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/muctieu', 
-    name: 'MucTieu', 
+  {
+    path: '/muctieu',
+    name: 'MucTieu',
     component: MucTieu,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/baocao', 
-    name: 'BaoCao', 
+  {
+    path: '/baocao',
+    name: 'BaoCao',
     component: BaoCao,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/caidat', 
-    name: 'CaiDat', 
+  {
+    path: '/caidat',
+    name: 'CaiDat',
     component: CaiDat,
     meta: { requiresAuth: true }
   },
-  { 
-    path: '/:pathMatch(.*)*', 
+  {
+    path: '/overview',
+    name: 'Overview',
+    component: Overview,
+    meta: { requiresAuth: true }
+  },
+ 
+  {
+    path: '/:pathMatch(.*)*',
     redirect: (to) => {
       // Redirect unknown routes dựa trên trạng thái đăng nhập
       return authService.isLoggedIn() ? '/giaodich' : '/login'
@@ -76,7 +85,7 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach((to, from, next) => {
   const isLoggedIn = authService.isLoggedIn()
-  
+
   // Nếu route yêu cầu authentication
   if (to.meta.requiresAuth) {
     if (!isLoggedIn) {

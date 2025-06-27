@@ -8,32 +8,38 @@
         </div>
         <ul class="nav nav-pills flex-column mb-auto gap-2">
             <li class="nav-item">
-                <router-link to="/giaodich" class="nav-link menu-link" active-class="active">
+                <router-link to="/overview" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-cash-coin me-3 fs-4"></i> Giao dịch
                 </router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/danhmuc" class="nav-link menu-link" active-class="active">
+                <router-link to="/danhmuc" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-list-ul me-3 fs-4"></i> Danh mục
                 </router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/ngansach" class="nav-link menu-link" active-class="active">
+                <router-link to="/ngansach" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-wallet2 me-3 fs-4"></i> Ngân sách
                 </router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/muctieu" class="nav-link menu-link" active-class="active">
+                <router-link to="/muctieu" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-bullseye me-3 fs-4"></i> Mục tiêu
                 </router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/baocao" class="nav-link menu-link" active-class="active">
+                <router-link to="/baocao" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-bar-chart-line me-3 fs-4"></i> Báo cáo
                 </router-link>
             </li>
             <li class="nav-item">
-                <router-link to="/caidat" class="nav-link menu-link" active-class="active">
+                <router-link to="/caidat" class="nav-link menu-link" active-class="active"
+                    @click="$emit('menu-selected')">
                     <i class="bi bi-gear me-3 fs-4"></i> Cài đặt
                 </router-link>
             </li>

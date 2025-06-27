@@ -15,9 +15,6 @@
       @show-receipt="showReceipt" @edit-transaction="editTransaction" @delete-transaction="confirmDelete"
       @download-excel="downloadExcel" />
 
-    <!-- Biểu đồ chi tiêu -->
-    <TransactionChart :transactions="filteredTransactions" />
-
     <!-- Các modal được teleport để tránh lỗi aria-hidden -->
     <TransactionDetailModal :transaction="selectedTransaction" :show="showDetailModal" @close="showDetailModal = false"
       @show-receipt="showReceipt" />

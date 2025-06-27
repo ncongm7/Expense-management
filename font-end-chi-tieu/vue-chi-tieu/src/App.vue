@@ -1,10 +1,9 @@
 <template>
   <!-- Hiển thị layout chính cho các trang khác -->
   <div v-if="!isLoginPage">
-    <Header />
+    <Header @toggle-menu="toggleMenuSide" />
     <main>
-
-      <Body />
+      <Body :showMenuSide="showMenuSide" @close-menu="closeMenuSide" />
     </main>
     <Footer />
   </div>
@@ -14,7 +13,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import Footer from './layout/Footer.vue';
@@ -25,10 +24,20 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
+const showMenuSide = ref(false);
+
 // Kiểm tra xem có phải trang login không
 const isLoginPage = computed(() => {
   return route.path === '/login';
 });
+
+const toggleMenuSide = () => {
+  showMenuSide.value = !showMenuSide.value;
+};
+
+const closeMenuSide = () => {
+  showMenuSide.value = false;
+};
 
 // Handle unauthorized event
 const handleUnauthorized = () => {
