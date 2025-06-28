@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="notification-popup" @mousedown.self="$emit('close')">
+  <div v-if="show" class="notification-popup" @click="$emit('close')">
     <div class="popup-content card shadow rounded-4 p-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="fw-bold"><i class="bi bi-bell me-2"></i>Thông báo</span>
