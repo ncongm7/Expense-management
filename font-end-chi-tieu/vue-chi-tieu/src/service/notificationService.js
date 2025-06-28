@@ -1,4 +1,4 @@
-import apiClient from './axiosConfig.js';
+import apiClient from './axiosConfig.js'
 
 /**
  * Service để xử lý các thao tác với thông báo
@@ -11,35 +11,35 @@ class NotificationService {
      */
     async getNotifications(filters = {}) {
         try {
-            const userStr = localStorage.getItem('user');
+            const userStr = localStorage.getItem('user')
             if (!userStr) {
-                console.log('Không có user data trong localStorage');
-                return [];
+                console.log('Không có user data trong localStorage')
+                return []
             }
 
-            const user = JSON.parse(userStr);
-            const userId = user?.id;
-            console.log('User ID từ localStorage:', userId);
+            const user = JSON.parse(userStr)
+            const userId = user?.id
+            console.log('User ID từ localStorage:', userId)
 
             if (!userId) {
-                console.log('Không có user ID');
-                return [];
+                console.log('Không có user ID')
+                return []
             }
 
             const response = await apiClient.get(`/notifications/hien-thi/${userId}`, {
                 params: {
                     limit: filters.limit || 50,
                     offset: filters.offset || 0,
-                    read: filters.read !== undefined ? filters.read : null
-                }
-            });
-            console.log('API Response:', response);
-            console.log('Lấy danh sách thông báo:', response.data);
-            return response.data;
+                    read: filters.read !== undefined ? filters.read : null,
+                },
+            })
+            console.log('API Response:', response)
+            console.log('Lấy danh sách thông báo:', response.data)
+            return response.data
         } catch (error) {
-            console.error('Lỗi lấy danh sách thông báo:', error);
-            console.error('Error details:', error.response?.data);
-            return [];
+            console.error('Lỗi lấy danh sách thông báo:', error)
+            console.error('Error details:', error.response?.data)
+            return []
         }
     }
 
@@ -49,25 +49,25 @@ class NotificationService {
      */
     async getUnreadCount() {
         try {
-            const userStr = localStorage.getItem('user');
+            const userStr = localStorage.getItem('user')
             if (!userStr) {
-                console.log('Không có user data trong localStorage');
-                return 0;
+                console.log('Không có user data trong localStorage')
+                return 0
             }
 
-            const user = JSON.parse(userStr);
-            const userId = user?.id;
+            const user = JSON.parse(userStr)
+            const userId = user?.id
 
             if (!userId) {
-                console.log('Không có user ID');
-                return 0;
+                console.log('Không có user ID')
+                return 0
             }
 
-            const response = await apiClient.get(`/notifications/unread-count/${userId}`);
-            return response.data.count || 0;
+            const response = await apiClient.get(`/notifications/count-unread/${userId}`)
+            return response.data || 0
         } catch (error) {
-            console.error('Lỗi lấy số thông báo chưa đọc:', error);
-            return 0;
+            console.error('Lỗi lấy số thông báo chưa đọc:', error)
+            return 0
         }
     }
 
@@ -78,11 +78,11 @@ class NotificationService {
      */
     async markAsRead(notificationId) {
         try {
-            await apiClient.put(`/notifications/${notificationId}/read`);
-            return true;
+            await apiClient.put(`/notifications/${notificationId}/read`)
+            return true
         } catch (error) {
-            console.error('Lỗi đánh dấu đã đọc:', error);
-            throw error;
+            console.error('Lỗi đánh dấu đã đọc:', error)
+            throw error
         }
     }
 
@@ -92,14 +92,14 @@ class NotificationService {
      */
     async markAllAsRead() {
         try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const userId = user?.id;
+            const user = JSON.parse(localStorage.getItem('user'))
+            const userId = user?.id
 
-            await apiClient.put(`/notifications/mark-all-read/${userId}`);
-            return true;
+            await apiClient.put(`/notifications/mark-all-read/${userId}`)
+            return true
         } catch (error) {
-            console.error('Lỗi đánh dấu tất cả đã đọc:', error);
-            throw error;
+            console.error('Lỗi đánh dấu tất cả đã đọc:', error)
+            throw error
         }
     }
 
@@ -110,11 +110,11 @@ class NotificationService {
      */
     async deleteNotification(notificationId) {
         try {
-            await apiClient.delete(`/notifications/${notificationId}`);
-            return true;
+            await apiClient.delete(`/notifications/${notificationId}`)
+            return true
         } catch (error) {
-            console.error('Lỗi xóa thông báo:', error);
-            throw error;
+            console.error('Lỗi xóa thông báo:', error)
+            throw error
         }
     }
 
@@ -125,11 +125,11 @@ class NotificationService {
      */
     async createNotification(notificationData) {
         try {
-            const response = await apiClient.post('/notifications', notificationData);
-            return response.data;
+            const response = await apiClient.post('/notifications', notificationData)
+            return response.data
         } catch (error) {
-            console.error('Lỗi tạo thông báo:', error);
-            throw error;
+            console.error('Lỗi tạo thông báo:', error)
+            throw error
         }
     }
 
@@ -143,14 +143,14 @@ class NotificationService {
         const notificationData = {
             userId: budget.userId,
             title: 'Vượt ngân sách',
-            message: `Bạn đã vượt ngân sách ${budget.period}! Đã chi ${spentAmount.toLocaleString()}đ / ${budget.amount.toLocaleString()}đ`,
+            message: `Bạn đã vượt ngân sách ${this.formatPeriod(budget.period)}! Đã chi ${spentAmount.toLocaleString()}đ / ${budget.amount.toLocaleString()}đ`,
             type: 'warning',
             relatedEntityType: 'budget',
             relatedEntityId: budget.id,
-            actionUrl: '/ngan-sach'
-        };
+            actionUrl: '/ngan-sach',
+        }
 
-        return await this.createNotification(notificationData);
+        return await this.createNotification(notificationData)
     }
 
     /**
@@ -167,10 +167,10 @@ class NotificationService {
             type: 'success',
             relatedEntityType: 'goal',
             relatedEntityId: goal.id,
-            actionUrl: '/muc-tieu'
-        };
+            actionUrl: '/muc-tieu',
+        }
 
-        return await this.createNotification(notificationData);
+        return await this.createNotification(notificationData)
     }
 
     /**
@@ -183,14 +183,14 @@ class NotificationService {
         const notificationData = {
             userId: budget.userId,
             title: 'Cảnh báo ngân sách',
-            message: `Sắp hết ngân sách ${budget.period}! Đã chi ${spentPercentage.toFixed(1)}%`,
+            message: `Sắp hết ngân sách ${this.formatPeriod(budget.period)}! Đã chi ${spentPercentage.toFixed(1)}%`,
             type: 'warning',
             relatedEntityType: 'budget',
             relatedEntityId: budget.id,
-            actionUrl: '/ngan-sach'
-        };
+            actionUrl: '/ngan-sach',
+        }
 
-        return await this.createNotification(notificationData);
+        return await this.createNotification(notificationData)
     }
 
     /**
@@ -199,18 +199,32 @@ class NotificationService {
      */
     async testAPI() {
         try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const userId = user?.id;
-            console.log('Test API - User ID:', userId);
+            const user = JSON.parse(localStorage.getItem('user'))
+            const userId = user?.id
+            console.log('Test API - User ID:', userId)
 
-            const response = await apiClient.get(`/notifications/hien-thi/${userId}`);
-            console.log('Test API Response:', response);
-            return response.data;
+            const response = await apiClient.get(`/notifications/hien-thi/${userId}`)
+            console.log('Test API Response:', response)
+            return response.data
         } catch (error) {
-            console.error('Test API Error:', error);
-            throw error;
+            console.error('Test API Error:', error)
+            throw error
         }
+    }
+
+    /**
+     * Format period để hiển thị thân thiện
+     * @param {string} period - Period value (month/week)
+     * @returns {string} Formatted period
+     */
+    formatPeriod(period) {
+        if (period === 'month') return 'Tháng';
+        if (period === 'week') return 'Tuần';
+        // Nếu là string dài thì extract
+        if (period.includes('Tháng') || period.includes('month')) return 'Tháng';
+        if (period.includes('Tuần') || period.includes('week')) return 'Tuần';
+        return period; // Fallback
     }
 }
 
-export default new NotificationService(); 
+export default new NotificationService()

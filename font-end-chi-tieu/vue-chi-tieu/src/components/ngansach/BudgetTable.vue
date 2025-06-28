@@ -17,9 +17,11 @@
         <tbody>
           <tr v-for="b in budgets" :key="b.id" class="table-row-hover">
             <td class="text-dark" data-label="Danh mục">{{ b.categoryName }}</td>
-            <td class="text-dark" data-label="Kỳ">{{ b.period }}</td>
-            <td class="text-success" data-label="Số tiền">{{ currency(b.amount) }}</td>
-            <td class="text-danger" data-label="Đã chi">{{ currency(b.amountSpent) }}</td>
+            <td class="text-dark" data-label="Kỳ">{{ formatPeriod(b.period) }}</td>
+            <td class="text-end">
+              <span class="fw-bold text-primary">{{ formatCurrency(b.amount) }}</span>
+            </td>
+            <td class="text-danger" data-label="Đã chi">{{ formatCurrency(b.amountSpent) }}</td>
             <td class="text-muted" data-label="Thời gian">{{ b.startDate }} - {{ b.endDate }}</td>
             <td style="min-width:160px" data-label="Tiến độ">
               <BudgetProgress :amount="b.amount" :actualAmount="b.amountSpent" />
@@ -50,12 +52,19 @@
 
 <script setup>
 import BudgetProgress from './BudgetProgress.vue';
+import { formatCurrency } from '../../utils/currencyFormatter.js';
+
 const props = defineProps({
   budgets: { type: Array, default: () => [] }
 });
-function currency(val) {
-  if (typeof val !== 'number') return val;
-  return val.toLocaleString('vi-VN') + ' ₫';
+
+function formatPeriod(period) {
+  if (period === 'month') return '📅 Tháng';
+  if (period === 'week') return '📊 Tuần';
+  // Nếu là string dài thì extract và format
+  if (period.includes('Tháng') || period.includes('month')) return '📅 Tháng';
+  if (period.includes('Tuần') || period.includes('week')) return '📊 Tuần';
+  return period; // Fallback
 }
 </script>
 

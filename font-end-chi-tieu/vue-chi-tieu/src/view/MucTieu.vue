@@ -17,10 +17,17 @@ const showForm = ref(false)
 const selectedGoal = ref(null)
 
 onMounted(async () => {
-  goals.value = await GoalsService.getGoals()
+  try {
+    console.log('MucTieu - Loading goals...');
+    goals.value = await GoalsService.getGoals()
+    console.log('MucTieu - Goals loaded:', goals.value);
+  } catch (error) {
+    console.error('MucTieu - Error loading goals:', error);
+  }
 })
 
 function editGoal(goal) {
+  console.log('MucTieu - Editing goal:', goal);
   selectedGoal.value = goal
   showForm.value = true
 }
@@ -31,22 +38,45 @@ function deleteGoal(id) {
   })
 }
 function saveGoal(goal) {
-  if (goal.id) {
-    // Sửa
-    GoalsService.updateGoal(goal).then(res => {
-      const idx = goals.value.findIndex(g => g.id === goal.id)
-      if (idx !== -1) goals.value[idx] = { ...goal }
-    })
-  } else {
-    console.log('Thêm mới mục tiêu:', goal)
-    // Thêm mới
-    GoalsService.addGoal(goal).then(res => {
-      
-      goals.value.push(res.data)
-    })
+  try {
+    console.log('MucTieu - Saving goal:', goal);
+
+    // Kiểm tra goal parameter
+    if (!goal || typeof goal !== 'object') {
+      console.error('MucTieu - Invalid goal parameter:', goal);
+      return;
+    }
+
+    // Kiểm tra xem có id hay không (cho edit) hoặc không có id (cho thêm mới)
+    if (goal.id && goal.id !== '') {
+      console.log('MucTieu - Updating existing goal with id:', goal.id);
+      // Sửa
+      GoalsService.updateGoal(goal).then(res => {
+        const idx = goals.value.findIndex(g => g.id === goal.id)
+        if (idx !== -1) goals.value[idx] = { ...goal }
+
+        // Refresh notifications ngay lập tức
+        window.dispatchEvent(new CustomEvent('refresh-notifications'));
+      }).catch(error => {
+        console.error('MucTieu - Error updating goal:', error);
+      })
+    } else {
+      console.log('MucTieu - Adding new goal:', goal)
+      // Thêm mới
+      GoalsService.addGoal(goal).then(res => {
+        goals.value.push(res.data)
+
+        // Refresh notifications ngay lập tức
+        window.dispatchEvent(new CustomEvent('refresh-notifications'));
+      }).catch(error => {
+        console.error('MucTieu - Error adding goal:', error);
+      })
+    }
+    showForm.value = false
+    selectedGoal.value = null
+  } catch (error) {
+    console.error('MucTieu - Error in saveGoal:', error);
   }
-  showForm.value = false
-  selectedGoal.value = null
 }
 function closeForm() {
   showForm.value = false

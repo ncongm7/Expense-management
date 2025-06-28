@@ -14,6 +14,20 @@ import GiaoDich from '@/view/GiaoDich.vue';
  */
 class BusinessLogicService {
     /**
+     * Format period để hiển thị thân thiện
+     * @param {string} period - Period value (month/week)
+     * @returns {string} Formatted period
+     */
+    formatPeriod(period) {
+        if (period === 'month') return 'Tháng';
+        if (period === 'week') return 'Tuần';
+        // Nếu là string dài thì extract
+        if (period.includes('Tháng') || period.includes('month')) return 'Tháng';
+        if (period.includes('Tuần') || period.includes('week')) return 'Tuần';
+        return period; // Fallback
+    }
+
+    /**
      * Xử lý khi có giao dịch mới
      * @param {Object} transaction - Giao dịch vừa tạo
      */
@@ -64,14 +78,15 @@ class BusinessLogicService {
                     amountSpent: newAmountSpent
                 });
 
-                console.log(`Đã cập nhật ngân sách ${matchingBudget.period}: ${newAmountSpent.toLocaleString()}đ`);
-            } else {
-                const check = confirm('Bạn có muốn tạo ngân sách mới cho giao dịch này không?');
-                if (check) {
-                    // TODO: Mở form tạo ngân sách mới
-                    console.log('Cần mở form tạo ngân sách mới');
-                }
+                console.log(`Đã cập nhật ngân sách ${this.formatPeriod(matchingBudget.period)}: ${newAmountSpent.toLocaleString()}đ`);
             }
+            // } else {
+            //     const check = confirm('Bạn có muốn tạo ngân sách mới cho giao dịch này không?');
+            //     if (check) {
+            //         // TODO: Mở form tạo ngân sách mới
+            //         console.log('Cần mở form tạo ngân sách mới');
+            //     }
+            // }
 
         } catch (error) {
             console.error('Lỗi cập nhật ngân sách:', error);
@@ -112,6 +127,9 @@ class BusinessLogicService {
                 // Tạo thông báo
                 await notificationService.createGoalUpdateNotification(firstGoal, allocationAmount);
 
+                // Emit event để refresh notifications ngay lập tức
+                window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
                 console.log(`Đã tự động tiết kiệm ${allocationAmount.toLocaleString()}đ vào mục tiêu "${firstGoal.title}"`);
             }
 
@@ -145,14 +163,22 @@ class BusinessLogicService {
                         matchingBudget,
                         matchingBudget.amountSpent
                     );
-                    console.warn(`⚠️ Vượt ngân sách ${matchingBudget.period}! Đã chi ${spentPercentage.toFixed(1)}%`);
+
+                    // Emit event để refresh notifications ngay lập tức
+                    window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
+                    console.warn(`⚠️ Vượt ngân sách ${this.formatPeriod(matchingBudget.period)}! Đã chi ${spentPercentage.toFixed(1)}%`);
                 } else if (spentPercentage >= 80) {
                     // Tạo thông báo cảnh báo
                     await notificationService.createBudgetWarningNotification(
                         matchingBudget,
                         spentPercentage
                     );
-                    console.warn(`⚠️ Sắp hết ngân sách ${matchingBudget.period}! Đã chi ${spentPercentage.toFixed(1)}%`);
+
+                    // Emit event để refresh notifications ngay lập tức
+                    window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
+                    console.warn(`⚠️ Sắp hết ngân sách ${this.formatPeriod(matchingBudget.period)}! Đã chi ${spentPercentage.toFixed(1)}%`);
                 }
             }
 

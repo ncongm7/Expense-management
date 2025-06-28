@@ -8,29 +8,28 @@
                     <div class="col-12">
                         <label class="form-label">Loại giao dịch</label>
                         <div class="form-check form-check-inline">
-                            <input v-model="form.type" class="form-check-input" type="radio" value="expense"
+                            <input v-model="formData.type" class="form-check-input" type="radio" value="expense"
                                 id="expenseRadio">
                             <label class="form-check-label" for="expenseRadio">Chi tiêu</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input v-model="form.type" class="form-check-input" type="radio" value="income"
+                            <input v-model="formData.type" class="form-check-input" type="radio" value="income"
                                 id="incomeRadio">
                             <label class="form-check-label" for="incomeRadio">Thu nhập</label>
                         </div>
                     </div>
                     <!-- Số tiền -->
                     <div class="col-md-6">
-                        <label class="form-label">Số tiền (₫)</label>
-                        <div class="input-group">
-                            <span class="input-group-text">₫</span>
-                            <input v-model="displayAmount" @input="onAmountInput" type="text" class="form-control"
-                                required />
-                        </div>
+                        <label class="form-label">Số tiền</label>
+                        <input  v-model="formData.amount" type="number" class="form-control"
+                            :class="{ 'is-invalid': errors.amount }" placeholder="Nhập số tiền"
+                            @input="handleAmountInput" @blur="handleAmountBlur" required />
+                        <div v-if="errors.amount" class="invalid-feedback">{{ errors.amount }}</div>
                     </div>
                     <!-- Danh mục -->
                     <div class="col-md-6">
                         <label class="form-label">Danh mục</label>
-                        <select v-model="form.categoryId" class="form-select" required>
+                        <select v-model="formData.categoryId" class="form-select" required>
                             <option disabled value="">-- Chọn danh mục --</option>
                             <option v-for="category in categories" :key="category.id" :value="category.id">
                                 {{ category.icon }} {{ category.name }}
@@ -40,12 +39,13 @@
                     <!-- Ngày chi -->
                     <div class="col-md-6">
                         <label class="form-label">Ngày</label>
-                        <input v-model="form.spentAt" type="date" class="form-control" required />
+                        <input v-model="formData.spentAt" type="date" class="form-control" required />
                     </div>
                     <!-- Ghi chú -->
                     <div class="col-md-6">
                         <label class="form-label">Ghi chú</label>
-                        <input v-model="form.notes" type="text" class="form-control" placeholder="Ví dụ: Cà phê sáng" />
+                        <input v-model="formData.note" type="text" class="form-control"
+                            placeholder="Ví dụ: Cà phê sáng" />
                     </div>
                     <!-- Upload ảnh hóa đơn -->
                     <div class="col-12">
@@ -63,135 +63,141 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onMounted, watch } from 'vue';
+import { ref, defineProps, defineEmits, onMounted, watch, reactive } from 'vue';
 import { useToast } from 'vue-toastification';
 import authService from '../../service/authService.js';
+import categoryService from '../../service/categoryService.js';
+import { validateCurrencyInput, autoFormatInput, parseCurrency } from '../../utils/currencyFormatter.js';
 
 const toast = useToast();
 
 const props = defineProps({
     categories: {
         type: Array,
-        required: true
+        default: () => []
     }
 });
 
 const emit = defineEmits(['transaction-added']);
 
-// Form data
-const form = ref({
+const formData = reactive({
     type: 'expense',
-    amount: null,
+    amount: '',
     categoryId: '',
-    notes: '',
+    note: '',
     spentAt: new Date().toISOString().split('T')[0],
-    receipt: null,
+    receiptUrl: ''
 });
 
-// Biến hiển thị số tiền đã format
-const displayAmount = ref('');
+// Validation state
+const errors = reactive({
+    amount: '',
+    categoryId: '',
+    spentAt: ''
+});
 
-// Khi form.amount thay đổi (ví dụ khi reset form), cập nhật displayAmount
-watch(() => form.value.amount, (newVal) => {
-    if (newVal !== null && newVal !== undefined && newVal !== '') {
-        displayAmount.value = formatNumber(newVal);
-    } else {
-        displayAmount.value = '';
+// Handle amount input with auto formatting
+const handleAmountInput = (event) => {
+    const value = event.target.value;
+
+    // Validate input
+    if (!validateCurrencyInput(value)) {
+        return;
     }
-});
 
-// Hàm format số (dùng dấu phẩy, nếu muốn dấu chấm thì thay ',' thành '.')
-function formatNumber(value) {
-    return value
-        .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
+    // Auto format while typing
+    const formatted = autoFormatInput(value);
+    formData.amount = formatted;
 
-// Khi người dùng nhập vào input
-function onAmountInput(e) {
-    // Lấy giá trị, loại bỏ ký tự không phải số
-    let raw = e.target.value.replace(/[^0-9]/g, '');
-    // Cập nhật model thực tế
-    form.value.amount = raw ? parseInt(raw, 10) : null;
-    // Hiển thị lại đã format
-    displayAmount.value = raw ? formatNumber(raw) : '';
-}
+    // Clear error when user starts typing
+    if (errors.amount) {
+        errors.amount = '';
+    }
+};
+
+// Handle amount blur - final validation
+const handleAmountBlur = () => {
+    if (formData.amount) {
+        const parsed = parseCurrency(formData.amount);
+        if (parsed <= 0) {
+            errors.amount = 'Số tiền phải lớn hơn 0';
+        }
+    }
+};
 
 /**
  * Xử lý khi user chọn file ảnh
- * @param {Event} event - Event từ input file
  */
 const handleFileUpload = (event) => {
-    form.value.receipt = event.target.files[0];
+    formData.receiptUrl = URL.createObjectURL(event.target.files[0]);
     toast.info('Ảnh hóa đơn đã được chọn!');
 };
 
 /**
- * Kiểm tra user đã đăng nhập chưa
- * @returns {boolean} True nếu đã đăng nhập
- */
-const checkUserLogin = () => {
-    if (!authService.isLoggedIn()) {
-        toast.error('Vui lòng đăng nhập để thêm giao dịch!');
-        return false;
-    }
-    return true;
-};
-
-/**
  * Xử lý khi submit form
- * Thêm userId vào formData trước khi gửi
  */
 const handleSubmit = async () => {
-    // Kiểm tra user đã đăng nhập chưa
-    if (!checkUserLogin()) {
-        return;
-    }
-
     try {
-        // Lấy thông tin user hiện tại
+        // Kiểm tra đăng nhập
+        if (!authService.isLoggedIn()) {
+            toast.error('Vui lòng đăng nhập để thêm giao dịch!');
+            return;
+        }
+
+        // Validate
+        errors.amount = '';
+        errors.categoryId = '';
+        errors.spentAt = '';
+
+        if (!formData.amount || parseCurrency(formData.amount) <= 0) {
+            errors.amount = 'Vui lòng nhập số tiền hợp lệ';
+            return;
+        }
+
+        if (!formData.categoryId) {
+            errors.categoryId = 'Vui lòng chọn danh mục';
+            return;
+        }
+
+        if (!formData.spentAt) {
+            errors.spentAt = 'Vui lòng chọn ngày';
+            return;
+        }
+
         const currentUser = authService.getCurrentUser();
 
         // Tạo FormData
-        const formData = new FormData();
-        formData.append('type', form.value.type);
-        formData.append('amount', form.value.amount);
-        formData.append('categoryId', form.value.categoryId);
-        formData.append('notes', form.value.notes);
-        formData.append('spentAt', form.value.spentAt);
-
-        // Thêm userId
-        const currentUser1 = authService.getCurrentUser();
-        formData.append('userId', currentUser.id);
-
-
+        const submitData = new FormData();
+        submitData.append('type', formData.type);
+        submitData.append('amount', parseCurrency(formData.amount));
+        submitData.append('categoryId', formData.categoryId);
+        submitData.append('notes', formData.note);
+        submitData.append('spentAt', formData.spentAt);
+        submitData.append('userId', currentUser.id);
 
         // Thêm file ảnh nếu có
-        if (form.value.receipt) {
-            formData.append('receipt', form.value.receipt);
-        }
-
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
-        }
-
+        // if (formData.receiptUrl && formData.receiptUrl.startsWith('blob:')) {
+        //     const fileInput = document.querySelector('input[type="file"]');
+        //     if (fileInput && fileInput.files[0]) {
+        //         submitData.append('receipt', fileInput.files[0]);
+        //     }
+        // }
 
         // Emit event để parent component xử lý
-        emit('transaction-added', formData);
+        emit('transaction-added', submitData);
 
         // Reset form
-        form.value = {
-            type: 'expense',
-            amount: null,
-            categoryId: '',
-            notes: '',
-            spentAt: new Date().toISOString().split('T')[0],
-            receipt: null,
-        };
-        displayAmount.value = '';
+        formData.type = 'expense';
+        formData.amount = '';
+        formData.categoryId = '';
+        formData.note = '';
+        formData.spentAt = new Date().toISOString().split('T')[0];
+        formData.receiptUrl = '';
+
+        toast.success('Giao dịch đã được thêm thành công!');
     } catch (err) {
-        console.error('Lỗi lưu giao dịch:', err);
-        toast.error('Không thể lưu giao dịch!');
+        console.error('Lỗi khi thêm giao dịch:', err);
+        toast.error('Có lỗi xảy ra khi thêm giao dịch!');
     }
 };
 

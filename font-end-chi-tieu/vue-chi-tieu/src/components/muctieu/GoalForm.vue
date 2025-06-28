@@ -6,25 +6,51 @@
             <form @submit.prevent="submitForm" @click.stop>
                 <div class="mb-4">
                     <label class="form-label">Tên mục tiêu</label>
-                    <input v-model="form.title" type="text" class="form-control" required />
+                    <input v-model="formData.title" type="text" class="form-control" required />
                 </div>
                 <div class="mb-4">
                     <label class="form-label">Số tiền mục tiêu</label>
-                    <input v-model.number="form.targetAmount" type="number" class="form-control" min="1000" required />
+                    <input v-model="formData.targetAmount" type="text" class="form-control"
+                        :class="{ 'is-invalid': errors.targetAmount }" placeholder="Nhập số tiền"
+                        @input="handleTargetAmountInput" @blur="handleTargetAmountBlur" required />
+                    <div v-if="errors.targetAmount" class="invalid-feedback">{{ errors.targetAmount }}</div>
                 </div>
                 <div class="mb-4">
                     <label class="form-label">Đã tiết kiệm</label>
-                    <input v-model.number="form.currentAmount" type="number" class="form-control" min="0" required />
+                    <input v-model="formData.currentAmount" type="text" class="form-control"
+                        :class="{ 'is-invalid': errors.currentAmount }" placeholder="Nhập số tiền"
+                        @input="handleCurrentAmountInput" @blur="handleCurrentAmountBlur" required />
+                    <div v-if="errors.currentAmount" class="invalid-feedback">{{ errors.currentAmount }}</div>
                 </div>
                 <div class="mb-4 row g-3">
                     <div class="col-6">
                         <label class="form-label">Ngày bắt đầu</label>
-                        <input v-model="form.createdAt" type="date" class="form-control" required />
+                        <input v-model="formData.createdAt" type="date" class="form-control" required />
                     </div>
                     <div class="col-6">
                         <label class="form-label">Ngày kết thúc</label>
-                        <input v-model="form.deadline" type="date" class="form-control" required />
+                        <input v-model="formData.deadline" type="date" class="form-control"
+                            :class="{ 'is-invalid': errors.deadline }" required />
+                        <div v-if="errors.deadline" class="invalid-feedback">{{ errors.deadline }}</div>
                     </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Mô tả</label>
+                    <textarea v-model="formData.description" class="form-control" rows="3"
+                        placeholder="Mô tả mục tiêu"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Danh mục</label>
+                    <select v-model="formData.category" class="form-control" :class="{ 'is-invalid': errors.category }">
+                        <option value="">-- Chọn danh mục --</option>
+                        <option value="personal">Cá nhân</option>
+                        <option value="family">Gia đình</option>
+                        <option value="business">Kinh doanh</option>
+                        <option value="education">Giáo dục</option>
+                        <option value="travel">Du lịch</option>
+                        <option value="other">Khác</option>
+                    </select>
+                    <div v-if="errors.category" class="invalid-feedback">{{ errors.category }}</div>
                 </div>
                 <div class="mb-4">
                     <label class="form-label">Ảnh mục tiêu</label>
@@ -32,11 +58,11 @@
                         <input type="file" ref="fileInput" @change="handleFileSelect" accept="image/*"
                             class="form-control" style="display: none;" />
                         <div class="upload-area" @click="$refs.fileInput.click()">
-                            <div v-if="!form.urlImage" class="upload-placeholder">
+                            <div v-if="!formData.urlImage" class="upload-placeholder">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <p>Click để chọn ảnh</p>
                             </div>
-                            <img v-else :src="form.urlImage" alt="Ảnh mục tiêu" class="preview-image" />
+                            <img v-else :src="formData.urlImage" alt="Ảnh mục tiêu" class="preview-image" />
                         </div>
                         <div v-if="uploading" class="upload-progress">
                             <div class="spinner-border spinner-border-sm" role="status">
@@ -56,18 +82,41 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, reactive } from 'vue';
 import { validateGoal } from '../../utils/goalValidator.js';
 import { uploadImageToCloudinary } from '@/utils/image/uploadImageToCloud.js';
+import { validateCurrencyInput, autoFormatInput, parseCurrency } from '../../utils/currencyFormatter.js';
 
 
 const props = defineProps({
-    goal: { type: Object, default: null }
+    goal: {
+        type: Object,
+        default: null,
+        required: false
+    }
 });
 const emit = defineEmits(['save', 'close']);
 
-const form = ref({
+const formData = reactive({
+    id: '',
+    title: '',
+    description: '',
+    targetAmount: '',
+    currentAmount: '',
+    createdAt: new Date().toISOString().split('T')[0],
+    deadline: '',
+    category: '',
+    urlImage: ''
+});
 
+// Validation state
+const errors = reactive({
+    title: '',
+    description: '',
+    targetAmount: '',
+    currentAmount: '',
+    deadline: '',
+    category: ''
 });
 
 const uploading = ref(false);
@@ -80,7 +129,7 @@ const handleFileSelect = async (event) => {
     uploading.value = true; // Hiển thị loading
     try {
         const url = await uploadImageToCloudinary(file);
-        form.value.urlImage = url;
+        formData.urlImage = url;
         console.log('Ảnh đã được tải lên:', url);
     } catch (error) {
         console.error('Lỗi upload ảnh:', error);
@@ -91,28 +140,176 @@ const handleFileSelect = async (event) => {
 }
 
 watch(() => props.goal, (val) => {
-    if (val) {
-        form.value = { ...val };
-    } else {
-        form.value = { name: '', amount: 0, saved: 0, startDate: '', endDate: '', image: '' };
+    try {
+        console.log('GoalForm - Watch triggered with val:', val);
+
+        if (val && typeof val === 'object') {
+            formData.id = val.id || '';
+            formData.title = val.title || '';
+            formData.description = val.description || '';
+            formData.targetAmount = val.targetAmount ? val.targetAmount.toString() : '';
+            formData.currentAmount = val.currentAmount ? val.currentAmount.toString() : '';
+            formData.createdAt = val.createdAt || new Date().toISOString().split('T')[0];
+            formData.deadline = val.deadline || '';
+            formData.category = val.category || '';
+            formData.urlImage = val.urlImage || '';
+        } else {
+            // Reset form khi không có goal
+            formData.id = '';
+            formData.title = '';
+            formData.description = '';
+            formData.targetAmount = '';
+            formData.currentAmount = '';
+            formData.createdAt = new Date().toISOString().split('T')[0];
+            formData.deadline = '';
+            formData.category = '';
+            formData.urlImage = '';
+        }
+    } catch (error) {
+        console.error('GoalForm - Error in watch function:', error);
+        // Reset form nếu có lỗi
+        formData.id = '';
+        formData.title = '';
+        formData.description = '';
+        formData.targetAmount = '';
+        formData.currentAmount = '';
+        formData.createdAt = new Date().toISOString().split('T')[0];
+        formData.deadline = '';
+        formData.category = '';
+        formData.urlImage = '';
     }
 }, { immediate: true });
 
+// Handle target amount input with auto formatting
+const handleTargetAmountInput = (event) => {
+    const value = event.target.value;
+
+    // Validate input
+    if (!validateCurrencyInput(value)) {
+        return;
+    }
+
+    // Auto format while typing
+    const formatted = autoFormatInput(value);
+    formData.targetAmount = formatted;
+
+    // Clear error when user starts typing
+    if (errors.targetAmount) {
+        errors.targetAmount = '';
+    }
+};
+
+// Handle current amount input with auto formatting
+const handleCurrentAmountInput = (event) => {
+    const value = event.target.value;
+
+    // Validate input
+    if (!validateCurrencyInput(value)) {
+        return;
+    }
+
+    // Auto format while typing
+    const formatted = autoFormatInput(value);
+    formData.currentAmount = formatted;
+
+    // Clear error when user starts typing
+    if (errors.currentAmount) {
+        errors.currentAmount = '';
+    }
+};
+
+// Handle target amount blur - final validation
+const handleTargetAmountBlur = () => {
+    if (formData.targetAmount) {
+        const parsed = parseCurrency(formData.targetAmount);
+        if (parsed < 1000) {
+            errors.targetAmount = 'Số tiền mục tiêu phải lớn hơn 1.000 ₫';
+        }
+    }
+};
+
+// Handle current amount blur - final validation
+const handleCurrentAmountBlur = () => {
+    if (formData.currentAmount) {
+        const parsed = parseCurrency(formData.currentAmount);
+        if (parsed < 0) {
+            errors.currentAmount = 'Số tiền đã tiết kiệm không được âm';
+        }
+    }
+};
+
 function submitForm() {
-    console.log('Submitting form:', form.value); // Debug
-    const result = validateGoal(form.value);
-    if (!result.valid) {
-        alert(result.message);
-        return;
+    try {
+        console.log('GoalForm - Submitting form with data:', formData);
+
+        // Validate
+        errors.title = '';
+        errors.description = '';
+        errors.targetAmount = '';
+        errors.currentAmount = '';
+        errors.deadline = '';
+        errors.category = '';
+
+        if (!formData.title) {
+            errors.title = 'Vui lòng nhập tên mục tiêu';
+            return;
+        }
+
+        if (!formData.targetAmount || parseCurrency(formData.targetAmount) < 1000) {
+            errors.targetAmount = 'Số tiền mục tiêu phải lớn hơn 1.000 ₫';
+            return;
+        }
+
+        if (!formData.currentAmount || parseCurrency(formData.currentAmount) < 0) {
+            errors.currentAmount = 'Số tiền đã tiết kiệm không được âm';
+            return;
+        }
+
+        if (!formData.deadline) {
+            errors.deadline = 'Vui lòng chọn ngày kết thúc';
+            return;
+        }
+
+        if (!formData.category) {
+            errors.category = 'Vui lòng chọn danh mục';
+            return;
+        }
+
+        const user = JSON.parse(localStorage.getItem('user'))
+        const userId = user?.id
+
+        if (!userId) {
+            alert('Vui lòng đăng nhập lại!');
+            return;
+        }
+
+        // Parse amounts to numbers before emitting
+        const submitData = {
+            ...formData,
+            targetAmount: parseCurrency(formData.targetAmount),
+            currentAmount: parseCurrency(formData.currentAmount),
+            userId: userId
+        };
+
+        // Xử lý id field
+        if (props.goal && props.goal.id) {
+            // Nếu có goal và có id, sử dụng id của goal
+            submitData.id = props.goal.id;
+        } else if (formData.id && formData.id !== '') {
+            // Nếu formData có id, sử dụng id đó
+            submitData.id = formData.id;
+        } else {
+            // Nếu không có id, để undefined (cho thêm mới)
+            delete submitData.id;
+        }
+
+        console.log('GoalForm - Emitting save with data:', submitData);
+        emit('save', submitData);
+
+    } catch (error) {
+        console.error('GoalForm - Error in submitForm:', error);
+        alert('Có lỗi xảy ra khi lưu mục tiêu. Vui lòng thử lại!');
     }
-    const user = JSON.parse(localStorage.getItem('user'))
-    const userId = user?.id 
-   
-    if (!userId) {
-        alert('Vui lòng đăng nhập lại!');
-        return;
-    }
-    emit('save', { ...form.value, userId: userId });
 }
 </script>
 

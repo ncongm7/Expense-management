@@ -47,6 +47,7 @@ import TransactionDeleteModal from '../components/giaodich/TransactionDeleteModa
 import ReceiptViewModal from '../components/giaodich/ReceiptViewModal.vue';
 import axios from 'axios';
 import apiClient from '@/service/axiosConfig.js';
+import notificationService from '@/service/notificationService.js';
 
 const categories = ref([]);
 const transactions = ref([]);
@@ -105,6 +106,15 @@ const handleTransactionAdded = async (formData) => {
     // Sử dụng transactionService với business logic
     await transactionService.createTransaction(formData);
     fetchTransactions();
+
+    // Refresh notifications ngay lập tức
+    window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
+    notificationService.getUnreadCount().then(count => {
+      if (count > 0) {
+        toast.info(`Bạn có ${count} thông báo mới!`);
+      }
+    });
     toast.success("Thêm giao dịch thành công!");
   } catch (err) {
     console.error('Lỗi lưu giao dịch:', err);
@@ -131,6 +141,10 @@ const deleteTransaction = async () => {
   try {
     await transactionService.deleteTransaction(transactionToDelete.value.id);
     fetchTransactions();
+
+    // Refresh notifications ngay lập tức
+    window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
     showDeleteModal.value = false;
   } catch (err) {
     console.error('Lỗi xóa giao dịch:', err);
@@ -146,6 +160,10 @@ const submitEdit = async ({ id, formData }) => {
   try {
     await transactionService.updateTransaction(id, formData);
     fetchTransactions();
+
+    // Refresh notifications ngay lập tức
+    window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
     showEditModal.value = false;
   } catch (err) {
     console.error('Lỗi cập nhật giao dịch:', err);

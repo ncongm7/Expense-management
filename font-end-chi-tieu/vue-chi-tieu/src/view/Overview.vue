@@ -11,15 +11,14 @@
                         <div>
                             <div class="fw-bold text-secondary">Tổng số dư</div>
                             <div class="fs-2 fw-bold text-balance balance-amount">
-                                <span class="amount">{{ totalBalance | currency }}</span>
-                                <span class="currency">₫</span>
+                                <span class="amount">{{ formatCurrency(totalBalance) }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge bg-success bg-opacity-75 px-3 py-2" v-if="balanceDiff !== null">
                             <i class="bi" :class="balanceDiff >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right'"></i>
-                            {{ Math.abs(balanceDiff) | currency }}
+                            {{ formatCurrency(Math.abs(balanceDiff)) }}
                             <span class="ms-1">so với kỳ trước</span>
                         </span>
                     </div>
@@ -88,6 +87,7 @@ import PieChart from '../components/PieChart.vue';
 import transactionService from '../service/transactionService.js';
 import categoryService from '../service/categoryService.js';
 import { useRouter } from 'vue-router';
+import { formatCurrency } from '../utils/currencyFormatter.js';
 
 const filters = [
     { value: 'today', label: 'Hôm nay', icon: 'bi-calendar-day' },
@@ -95,7 +95,7 @@ const filters = [
     { value: 'month', label: 'Tháng này', icon: 'bi-calendar-month' },
     { value: 'year', label: 'Năm nay', icon: 'bi-calendar3' },
 ];
-const selectedFilter = ref('month');
+const selectedFilter = ref('today');
 const transactions = ref([]);
 const categories = ref([]);
 const pieData = ref([]);
@@ -182,12 +182,6 @@ function goToGiaoDich() {
 
 onMounted(fetchData);
 watch(selectedFilter, fetchData);
-
-// Currency filter
-function currency(val) {
-    if (typeof val !== 'number') return val;
-    return val.toLocaleString('en-US');
-}
 </script>
 
 <style scoped>

@@ -54,6 +54,15 @@ const fetchUnreadCount = async () => {
     }
 };
 
+// Refresh notifications ngay lập tức
+const refreshNotifications = async () => {
+    console.log('Refresh notifications ngay lập tức...');
+    await fetchUnreadCount();
+    if (showPopup.value) {
+        await fetchNotifications();
+    }
+};
+
 // Đánh dấu tất cả đã đọc
 const markAllAsRead = async () => {
     try {
@@ -65,14 +74,14 @@ const markAllAsRead = async () => {
     }
 };
 
-// Auto refresh mỗi 30 giây
+// Auto refresh mỗi 10 giây
 const startAutoRefresh = () => {
     refreshInterval = setInterval(() => {
         fetchUnreadCount();
         if (showPopup.value) {
             fetchNotifications();
         }
-    }, 30000); // 30 giây
+    }, 10000); // 10 giây
 };
 
 // Dừng auto refresh
@@ -81,6 +90,11 @@ const stopAutoRefresh = () => {
         clearInterval(refreshInterval);
         refreshInterval = null;
     }
+};
+
+// Lắng nghe sự kiện refresh notifications
+const handleRefreshNotifications = () => {
+    refreshNotifications();
 };
 
 onMounted(() => {
@@ -95,6 +109,9 @@ onMounted(() => {
         fetchUnreadCount();
         fetchNotifications();
         startAutoRefresh();
+
+        // Lắng nghe sự kiện refresh notifications
+        window.addEventListener('refresh-notifications', handleRefreshNotifications);
     } else {
         console.log('User chưa đăng nhập hoặc không có token');
     }
@@ -102,6 +119,8 @@ onMounted(() => {
 
 onUnmounted(() => {
     stopAutoRefresh();
+    // Xóa event listener
+    window.removeEventListener('refresh-notifications', handleRefreshNotifications);
 });
 </script>
 

@@ -6,31 +6,43 @@
       <form @submit.prevent="submitForm" class="needs-validation">
         <div class="mb-4">
           <label class="form-label text-dark fw-medium">Danh mục</label>
-          <select v-model="form.category_id" class="form-select form-select-lg border-0 bg-light" required>
+          <select v-model="formData.categoryId" class="form-select form-select-lg border-0 bg-light"
+            :class="{ 'is-invalid': errors.categoryId }" required>
             <option value="" disabled>-- Chọn danh mục --</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id" class="text-dark">{{ cat.name }}</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id" class="text-dark">{{ cat.icon }} {{ cat.name
+            }}</option>
           </select>
+          <div v-if="errors.categoryId" class="invalid-feedback">{{ errors.categoryId }}</div>
         </div>
         <div class="mb-4">
           <label class="form-label text-dark fw-medium">Kỳ ngân sách</label>
-          <input v-model="form.period" type="text" class="form-control form-control-lg border-0 bg-light"
-            placeholder="VD: Tháng 6/2025" required />
+          <select v-model="formData.period" class="form-select form-select-lg border-0 bg-light"
+            :class="{ 'is-invalid': errors.period }" required>
+            <option value="" disabled>-- Chọn kỳ ngân sách --</option>
+            <option value="month" class="text-dark">📅 Tháng</option>
+            <option value="week" class="text-dark">📊 Tuần</option>
+          </select>
+          <div v-if="errors.period" class="invalid-feedback">{{ errors.period }}</div>
         </div>
         <div class="mb-4">
           <label class="form-label text-dark fw-medium">Số tiền ngân sách</label>
-          <input v-model.number="form.amount" type="number" class="form-control form-control-lg border-0 bg-light"
-            min="1000" required />
+          <input v-model="formData.amount" type="text" class="form-control form-control-lg border-0 bg-light"
+            :class="{ 'is-invalid': errors.amount }" placeholder="Nhập số tiền" @input="handleAmountInput"
+            @blur="handleAmountBlur" required />
+          <div v-if="errors.amount" class="invalid-feedback">{{ errors.amount }}</div>
         </div>
         <div class="mb-4 row g-3">
           <div class="col-6">
             <label class="form-label text-dark fw-medium">Ngày bắt đầu</label>
-            <input v-model="form.start_date" type="date" class="form-control form-control-lg border-0 bg-light"
-              required />
+            <input v-model="formData.startDate" type="date" class="form-control form-control-lg border-0 bg-light"
+              :class="{ 'is-invalid': errors.startDate }" required />
+            <div v-if="errors.startDate" class="invalid-feedback">{{ errors.startDate }}</div>
           </div>
           <div class="col-6">
             <label class="form-label text-dark fw-medium">Ngày kết thúc</label>
-            <input v-model="form.end_date" type="date" class="form-control form-control-lg border-0 bg-light"
-              required />
+            <input v-model="formData.endDate" type="date" class="form-control form-control-lg border-0 bg-light"
+              :class="{ 'is-invalid': errors.endDate }" required />
+            <div v-if="errors.endDate" class="invalid-feedback">{{ errors.endDate }}</div>
           </div>
         </div>
         <div class="d-flex justify-content-end gap-3 mt-5">
@@ -45,60 +57,164 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, reactive } from 'vue';
+import categoryService from '../../service/categoryService.js';
+import { validateCurrencyInput, autoFormatInput, parseCurrency } from '../../utils/currencyFormatter.js';
+
 const props = defineProps({
-  budget: { type: Object, default: null }
+  budget: {
+    type: Object,
+    default: null,
+    required: false
+  },
+  categories: {
+    type: Array,
+    default: () => [],
+    required: false
+  }
 });
 const emit = defineEmits(['save', 'close']);
-const categories = ref([
-  // { id: 1, name: 'Ăn uống' }, ...
-]);
-const form = ref({
-  category_id: '',
-  period: '',
-  amount: 0,
-  start_date: '',
-  end_date: ''
+
+// Debug categories prop
+console.log('BudgetForm - Categories prop:', props.categories);
+console.log('BudgetForm - Budget prop:', props.budget);
+
+const formData = reactive({
+  categoryId: '',
+  amount: '',
+  period: 'month',
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: ''
 });
+
+// Validation state
+const errors = reactive({
+  categoryId: '',
+  amount: '',
+  period: '',
+  startDate: '',
+  endDate: ''
+});
+
 watch(() => props.budget, (val) => {
-  if (val) {
-    form.value = {
-      category_id: val.category_id || '',
-      period: val.period || '',
-      amount: val.amount || 0,
-      start_date: val.start_date || '',
-      end_date: val.end_date || ''
-    };
-  } else {
-    form.value = { category_id: '', period: '', amount: 0, start_date: '', end_date: '' };
+  try {
+    console.log('BudgetForm - Watch triggered with val:', val);
+
+    if (val && typeof val === 'object') {
+      // Xử lý period value - nếu là string dài thì extract 'month' hoặc 'week'
+      let periodValue = val.period || '';
+      if (periodValue.includes('Tháng') || periodValue.includes('month')) {
+        periodValue = 'month';
+      } else if (periodValue.includes('Tuần') || periodValue.includes('week')) {
+        periodValue = 'week';
+      }
+
+      formData.categoryId = val.categoryId || val.category_id || '';
+      formData.period = periodValue;
+      formData.amount = val.amount ? val.amount.toString() : '';
+      formData.startDate = val.startDate || val.start_date || '';
+      formData.endDate = val.endDate || val.end_date || '';
+    } else {
+      // Reset form khi không có budget
+      formData.categoryId = '';
+      formData.period = 'month';
+      formData.amount = '';
+      formData.startDate = new Date().toISOString().split('T')[0];
+      formData.endDate = '';
+    }
+  } catch (error) {
+    console.error('BudgetForm - Error in watch function:', error);
+    // Reset form nếu có lỗi
+    formData.categoryId = '';
+    formData.period = 'month';
+    formData.amount = '';
+    formData.startDate = new Date().toISOString().split('T')[0];
+    formData.endDate = '';
   }
 }, { immediate: true });
-onMounted(() => {
-  // TODO: Gọi API lấy danh mục thực tế
-  categories.value = [
-    { id: 1, name: 'Ăn uống' },
-    { id: 2, name: 'Di chuyển' },
-    { id: 3, name: 'Giải trí' },
-    { id: 4, name: 'Học tập' },
-  ];
-});
+
 function submitForm() {
-  if (
-    !form.value.category_id ||
-    !form.value.period ||
-    !form.value.amount ||
-    !form.value.start_date ||
-    !form.value.end_date
-  ) return;
-  if (form.value.amount < 1000) {
-    alert('Số tiền phải lớn hơn 1000');
+  // Validate
+  errors.categoryId = '';
+  errors.amount = '';
+  errors.period = '';
+  errors.startDate = '';
+  errors.endDate = '';
+
+  if (!formData.categoryId) {
+    errors.categoryId = 'Vui lòng chọn danh mục';
     return;
   }
-  if (form.value.start_date > form.value.end_date) {
-    alert('Ngày bắt đầu phải trước ngày kết thúc');
+
+  if (!formData.period) {
+    errors.period = 'Vui lòng chọn kỳ ngân sách';
     return;
   }
-  emit('save', { ...form.value, id: props.budget?.id });
+
+  if (!formData.amount || parseCurrency(formData.amount) < 1000) {
+    errors.amount = 'Số tiền phải lớn hơn 1.000 ₫';
+    return;
+  }
+
+  if (!formData.startDate) {
+    errors.startDate = 'Vui lòng chọn ngày bắt đầu';
+    return;
+  }
+
+  if (!formData.endDate) {
+    errors.endDate = 'Vui lòng chọn ngày kết thúc';
+    return;
+  }
+
+  if (formData.period !== 'month' && formData.period !== 'week') {
+    errors.period = 'Vui lòng chọn kỳ ngân sách (Tháng hoặc Tuần)';
+    return;
+  }
+
+  if (formData.startDate > formData.endDate) {
+    errors.endDate = 'Ngày bắt đầu phải trước ngày kết thúc';
+    return;
+  }
+
+  // Parse amount to number before emitting
+  const submitData = {
+    ...formData,
+    amount: parseCurrency(formData.amount)
+  };
+
+  // Chỉ thêm id nếu có budget
+  if (props.budget && props.budget.id) {
+    submitData.id = props.budget.id;
+  }
+
+  emit('save', submitData);
+}
+
+function handleAmountInput(event) {
+  const value = event.target.value;
+
+  // Validate input
+  if (!validateCurrencyInput(value)) {
+    return;
+  }
+
+  // Auto format while typing
+  const formatted = autoFormatInput(value);
+  formData.amount = formatted;
+
+  // Clear error when user starts typing
+  if (errors.amount) {
+    errors.amount = '';
+  }
+}
+
+function handleAmountBlur() {
+  if (formData.amount) {
+    const parsed = parseCurrency(formData.amount);
+    if (parsed < 1000) {
+      errors.amount = 'Số tiền phải lớn hơn 1.000 ₫';
+    }
+  }
 }
 </script>
 

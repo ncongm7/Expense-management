@@ -6,7 +6,7 @@
         <span class="fw-bold ms-2">{{ notification.title }}</span>
         <span v-if="!notification.read" class="badge bg-primary ms-2">Mới</span>
       </div>
-      <small class="text-muted">{{ formatTime(notification.createdAt) }}</small>
+      <small class="text-muted">{{ formatTime(notification.created) }}</small>
     </div>
     <div class="notification-message">
       {{ notification.message }}

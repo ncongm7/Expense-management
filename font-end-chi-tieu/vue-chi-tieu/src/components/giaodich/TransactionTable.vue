@@ -32,7 +32,7 @@
                                 <span v-else class="badge bg-success">Thu nhập</span>
                             </td>
                             <td :class="gd.type === 'expense' ? 'text-danger fw-bold' : 'text-success fw-bold'">
-                                {{ gd.amount.toLocaleString('vi-VN') }} ₫
+                                {{ formatCurrency(gd.amount) }}
                             </td>
                             <td>{{ gd.categoryName || '---' }}</td>
                             <td :class="!gd.note ? 'text-muted fst-italic' : ''">{{ gd.note || '-' }}</td>
@@ -82,6 +82,7 @@
 
 <script setup>
 import { ref, computed, defineProps, defineEmits, watch } from 'vue';
+import { formatCurrency } from '../../utils/currencyFormatter.js';
 
 const props = defineProps({
     transactions: {
@@ -146,4 +147,12 @@ const confirmDelete = (transaction) => {
 const downloadExcel = () => {
     emit('download-excel');
 };
+
+function getTypeIcon(type) {
+    return type === 'income' ? 'bi-arrow-up-circle-fill text-success' : 'bi-arrow-down-circle-fill text-danger';
+}
+
+function getTypeText(type) {
+    return type === 'income' ? 'Thu nhập' : 'Chi tiêu';
+}
 </script>
