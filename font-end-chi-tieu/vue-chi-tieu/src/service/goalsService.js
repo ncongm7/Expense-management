@@ -7,10 +7,10 @@ export default {
         return res.data
     },
     async addGoal(goal) {
-        return axios.post('/goals', goal)
+        return axios.post('/goals/add', goal)
     },
     async updateGoal(goal) {
-        return axios.put(`/goals/${goal.id}`, goal)
+        return axios.put(`/goals/update/${goal.id}`, goal)
     },
     async deleteGoal(id) {
         return axios.delete(`/goals/delete/${id}`)

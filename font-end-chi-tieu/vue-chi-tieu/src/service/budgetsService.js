@@ -4,13 +4,16 @@ import apiClient from './axiosConfig.js';
 
     async getBudgets() {
         try {
-            const response = await apiClient.get('/budgets/hien-thi');
+            const response = await apiClient.get('/budgets/hien-thi/' + JSON.parse(localStorage.getItem('user')).id);
             console.log(response.data);
             return response.data;
         } catch (error) {
             console.error('Lỗi lấy danh sách ngân sách:', error);
             throw error;
         }
+
 }
-}
-export default BudgetsService;  
+
+ }
+ const budgetsService = new BudgetsService()
+ export default budgetsService

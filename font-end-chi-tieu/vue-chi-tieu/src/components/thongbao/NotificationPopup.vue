@@ -15,6 +15,7 @@
   </div>
 </template>
 <script setup>
+import { computed } from 'vue';
 import NotificationItem from './NotificationItem.vue';
 const props = defineProps({
   notifications: { type: Array, default: () => [] },

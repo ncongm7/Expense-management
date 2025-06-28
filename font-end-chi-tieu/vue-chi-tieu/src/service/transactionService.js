@@ -1,4 +1,5 @@
 import apiClient from './axiosConfig.js';
+import businessLogicService from './businessLogicService.js';
 
 /**
  * Service để xử lý các thao tác với giao dịch
@@ -14,12 +15,11 @@ class TransactionService {
     async getTransactions(filters = {}) {
         console.log(filters);
 
-
         try {
             const user = JSON.parse(localStorage.getItem('user'));
             const userId = user?.id;
             console.log(userId);
-            
+
             const response = await apiClient.get(`/transactions/hien-thi/${userId}`, {
                 params: {
                     type: filters?.type || null,
@@ -28,9 +28,7 @@ class TransactionService {
                     toDate: filters?.toDate || null,
                     search: filters?.search || null,
                 }
-
             });
-            //tai sao api chả về lại là null
             console.log(response.data);
             console.log(response.data.length);
             return response.data;
@@ -57,19 +55,35 @@ class TransactionService {
     }
 
     /**
-     * Tạo giao dịch mới
-     * @param {Object} transactionData - Dữ liệu giao dịch
+     * Tạo giao dịch mới với business logic
+     * @param {FormData} formData - Dữ liệu giao dịch
      * @returns {Promise<Object>} Giao dịch đã tạo
      */
-    // async createTransaction(formData) {
-    //     try {
-    //         const response = await apiClient.post('/transactions/post', formData);
-    //         return response.data;
-    //     } catch (error) {
-    //         console.error('Lỗi tạo giao dịch:', error);
-    //         throw error;
-    //     }
-    // }
+    async createTransaction(formData) {
+        try {
+            const response = await apiClient.post('/transactions/post', formData);
+
+            // Xử lý business logic sau khi tạo giao dịch thành công
+            if (response.data) {
+                // Chuyển FormData thành object để xử lý
+                const transactionData = {
+                    type: formData.get('type'),
+                    amount: parseFloat(formData.get('amount')),
+                    categoryId: parseInt(formData.get('categoryId')),
+                    notes: formData.get('notes'),
+                    spentAt: formData.get('spentAt')
+                };
+
+                // Gọi business logic service
+                await businessLogicService.handleNewTransaction(transactionData);
+            }
+
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi tạo giao dịch:', error);
+            throw error;
+        }
+    }
 
     /**
      * Cập nhật giao dịch

@@ -115,6 +115,8 @@ function submitForm() {
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(2px);
+  pointer-events: auto;
+  /* Đảm bảo backdrop nhận sự kiện */
 }
 
 .modal-dialog {
@@ -123,6 +125,8 @@ function submitForm() {
   border-radius: 1.5rem;
   transform: scale(1);
   transition: transform 0.3s ease;
+  pointer-events: auto;
+  /* Đảm bảo modal-dialog nhận sự kiện */
 }
 
 .modal-dialog:hover {
@@ -135,6 +139,8 @@ function submitForm() {
   padding: 0.75rem 1rem;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  pointer-events: auto;
+  /* Đảm bảo input và select nhận sự kiện */
 }
 
 .form-control:focus,
@@ -146,6 +152,8 @@ function submitForm() {
 
 .btn {
   transition: all 0.3s ease;
+  pointer-events: auto;
+  /* Đảm bảo nút nhận sự kiện */
 }
 
 .btn:hover {

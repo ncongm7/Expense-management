@@ -102,7 +102,8 @@ const handleFilterChanged = (newFilters) => {
 
 const handleTransactionAdded = async (formData) => {
   try {
-    await apiClient.post('/transactions/post', formData);
+    // Sử dụng transactionService với business logic
+    await transactionService.createTransaction(formData);
     fetchTransactions();
     toast.success("Thêm giao dịch thành công!");
   } catch (err) {

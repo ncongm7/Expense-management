@@ -34,8 +34,8 @@
                     </ul>
                 </div>
             </div>
-            <!-- <NotificationPopup :notifications="notifications" :show="showNotificationPopup"
-                @close="showNotificationPopup = false" @mark-all-read="markAllRead" /> -->
+            <NotificationPopup :notifications="notifications" :show="showNotificationPopup"
+                @close="showNotificationPopup = false" @mark-all-read="markAllRead" />
             <div class="header-gradient"></div>
             <div class="position-absolute end-0 bottom-0 me-3 mb-1 text-muted small d-none d-md-block"
                 style="z-index:2;">

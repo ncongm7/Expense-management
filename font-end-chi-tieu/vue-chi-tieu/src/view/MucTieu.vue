@@ -38,8 +38,10 @@ function saveGoal(goal) {
       if (idx !== -1) goals.value[idx] = { ...goal }
     })
   } else {
+    console.log('Thêm mới mục tiêu:', goal)
     // Thêm mới
     GoalsService.addGoal(goal).then(res => {
+      
       goals.value.push(res.data)
     })
   }

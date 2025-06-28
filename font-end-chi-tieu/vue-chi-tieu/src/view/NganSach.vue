@@ -12,12 +12,12 @@ import { ref } from 'vue'
 import BudgetTable from '../components/ngansach/BudgetTable.vue'
 import BudgetForm from '../components/ngansach/BudgetForm.vue'
 import { onMounted } from 'vue'
-import BudgetsService from '../service/budgetsService.js'
+import budgetsService from '../service/budgetsService.js'
 const budgets = ref([
 ])
 onMounted(async () => {
   try {
-    const data = await new BudgetsService().getBudgets();
+    const data = await budgetsService.getBudgets();
     budgets.value = data;
     console.log(budgets.value);
   } catch (error) {
