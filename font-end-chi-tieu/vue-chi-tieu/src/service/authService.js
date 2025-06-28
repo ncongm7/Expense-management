@@ -5,7 +5,7 @@ import apiClient from './axiosConfig.js';
  * Chứa các function đăng nhập, đăng ký, logout
  */
 class AuthService {
-    
+
     /**
      * Đăng nhập user
      * @param {Object} credentials - Thông tin đăng nhập (email, password)
@@ -15,7 +15,7 @@ class AuthService {
     async login(credentials, rememberMe = false) {
         try {
             const response = await apiClient.post('/auth/login', credentials);
-            
+
             // Lưu thông tin user và token
             const userData = {
                 id: response.data.user.id,
@@ -26,7 +26,7 @@ class AuthService {
 
             // Lưu user data vào localStorage
             localStorage.setItem('user', JSON.stringify(userData));
-            
+
             // Lưu token vào localStorage hoặc sessionStorage tùy theo remember me
             if (rememberMe) {
                 localStorage.setItem('token', response.data.token);
@@ -102,7 +102,13 @@ class AuthService {
             const token = this.getToken();
             if (!token) return false;
 
-            const response = await apiClient.get('/auth/validate');
+            // Sử dụng axios trực tiếp thay vì apiClient để tránh circular dependency
+            const axios = (await import('axios')).default;
+            const response = await axios.get('http://localhost:8080/auth/validate', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             return response.status === 200;
         } catch (error) {
             console.error('Token không hợp lệ:', error);

@@ -11,9 +11,20 @@ class NotificationService {
      */
     async getNotifications(filters = {}) {
         try {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                console.log('Không có user data trong localStorage');
+                return [];
+            }
+
+            const user = JSON.parse(userStr);
             const userId = user?.id;
             console.log('User ID từ localStorage:', userId);
+
+            if (!userId) {
+                console.log('Không có user ID');
+                return [];
+            }
 
             const response = await apiClient.get(`/notifications/hien-thi/${userId}`, {
                 params: {
@@ -28,7 +39,7 @@ class NotificationService {
         } catch (error) {
             console.error('Lỗi lấy danh sách thông báo:', error);
             console.error('Error details:', error.response?.data);
-            throw error;
+            return [];
         }
     }
 
@@ -38,11 +49,22 @@ class NotificationService {
      */
     async getUnreadCount() {
         try {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                console.log('Không có user data trong localStorage');
+                return 0;
+            }
+
+            const user = JSON.parse(userStr);
             const userId = user?.id;
 
+            if (!userId) {
+                console.log('Không có user ID');
+                return 0;
+            }
+
             const response = await apiClient.get(`/notifications/unread-count/${userId}`);
-            return response.data.count;
+            return response.data.count || 0;
         } catch (error) {
             console.error('Lỗi lấy số thông báo chưa đọc:', error);
             return 0;

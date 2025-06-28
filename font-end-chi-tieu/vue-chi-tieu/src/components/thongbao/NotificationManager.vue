@@ -86,14 +86,17 @@ const stopAutoRefresh = () => {
 onMounted(() => {
     // Kiểm tra user trong localStorage
     const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     console.log('User trong localStorage:', user);
+    console.log('Token:', token);
 
-    if (user && user.id) {
+    if (user && user.id && token) {
+        console.log('User đã đăng nhập, bắt đầu fetch notifications...');
         fetchUnreadCount();
         fetchNotifications();
         startAutoRefresh();
     } else {
-        console.error('Không tìm thấy user trong localStorage');
+        console.log('User chưa đăng nhập hoặc không có token');
     }
 });
 
