@@ -1,11 +1,11 @@
 <template>
     <div class="notification-manager">
         <!-- Notification Bell -->
-        <NotificationBell :unread-count="unreadCount" @toggle-popup="togglePopup" />
+        <NotificationBell :unreadCount="unreadCount" @toggle-popup="togglePopup" />
 
         <!-- Notification Popup -->
-        <NotificationPopup :notifications="notifications" :show="showPopup" @close="showPopup = false"
-            @mark-all-read="markAllAsRead" />
+        <NotificationPopup :notifications="notifications" :show="showPopup" :unreadCount="unreadCount"
+            @close="showPopup = false" @mark-all-read="markAllAsRead" @update-notifications="fetchNotifications" />
     </div>
 </template>
 
@@ -31,20 +31,26 @@ const togglePopup = () => {
 // Lấy danh sách thông báo
 const fetchNotifications = async () => {
     try {
+        console.log('Đang gọi API lấy thông báo...');
         const data = await notificationService.getNotifications({ limit: 20 });
-        notifications.value = data;
+        console.log('Dữ liệu thông báo nhận được:', data);
+        notifications.value = data || [];
     } catch (error) {
         console.error('Lỗi lấy thông báo:', error);
+        notifications.value = [];
     }
 };
 
 // Lấy số thông báo chưa đọc
 const fetchUnreadCount = async () => {
     try {
+        console.log('Đang gọi API lấy số thông báo chưa đọc...');
         const count = await notificationService.getUnreadCount();
-        unreadCount.value = count;
+        console.log('Số thông báo chưa đọc:', count);
+        unreadCount.value = count || 0;
     } catch (error) {
         console.error('Lỗi lấy số thông báo chưa đọc:', error);
+        unreadCount.value = 0;
     }
 };
 
@@ -78,8 +84,17 @@ const stopAutoRefresh = () => {
 };
 
 onMounted(() => {
-    fetchUnreadCount();
-    startAutoRefresh();
+    // Kiểm tra user trong localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log('User trong localStorage:', user);
+
+    if (user && user.id) {
+        fetchUnreadCount();
+        fetchNotifications();
+        startAutoRefresh();
+    } else {
+        console.error('Không tìm thấy user trong localStorage');
+    }
 });
 
 onUnmounted(() => {

@@ -13,6 +13,7 @@ class NotificationService {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
             const userId = user?.id;
+            console.log('User ID từ localStorage:', userId);
 
             const response = await apiClient.get(`/notifications/hien-thi/${userId}`, {
                 params: {
@@ -21,9 +22,12 @@ class NotificationService {
                     read: filters.read !== undefined ? filters.read : null
                 }
             });
+            console.log('API Response:', response);
+            console.log('Lấy danh sách thông báo:', response.data);
             return response.data;
         } catch (error) {
             console.error('Lỗi lấy danh sách thông báo:', error);
+            console.error('Error details:', error.response?.data);
             throw error;
         }
     }
@@ -165,6 +169,25 @@ class NotificationService {
         };
 
         return await this.createNotification(notificationData);
+    }
+
+    /**
+     * Test API connection
+     * @returns {Promise<Object>} Test response
+     */
+    async testAPI() {
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userId = user?.id;
+            console.log('Test API - User ID:', userId);
+
+            const response = await apiClient.get(`/notifications/hien-thi/${userId}`);
+            console.log('Test API Response:', response);
+            return response.data;
+        } catch (error) {
+            console.error('Test API Error:', error);
+            throw error;
+        }
     }
 }
 

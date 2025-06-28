@@ -14,7 +14,7 @@
                 </div>
             </div>
             <div class="d-flex align-items-center ms-auto gap-3">
-                <NotificationBell :unreadCount="unreadCount" @toggle-popup="toggleNotificationPopup" />
+                <NotificationManager />
                 <button class="btn btn-icon" title="Đồng bộ">
                     <i class="bi bi-cloud-arrow-up fs-5"></i>
                 </button>
@@ -34,8 +34,6 @@
                     </ul>
                 </div>
             </div>
-            <NotificationPopup :notifications="notifications" :show="showNotificationPopup"
-                @close="showNotificationPopup = false" @mark-all-read="markAllRead" />
             <div class="header-gradient"></div>
             <div class="position-absolute end-0 bottom-0 me-3 mb-1 text-muted small d-none d-md-block"
                 style="z-index:2;">
@@ -46,12 +44,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import authService from '../service/authService.js'
-import NotificationBell from '../components/thongbao/NotificationBell.vue'
-import NotificationPopup from '../components/thongbao/NotificationPopup.vue'
+import NotificationManager from '../components/thongbao/NotificationManager.vue'
 
 const router = useRouter()
 const toast = useToast()
@@ -61,48 +58,12 @@ defineEmits(['toggle-menu'])
 const now = ref('')
 let timer = null
 
-// Thông báo
-const notifications = ref([])
-const showNotificationPopup = ref(false)
-const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
-
-function loadNotifications() {
-    const data = localStorage.getItem('notifications')
-    notifications.value = data ? JSON.parse(data) : []
-}
-function saveNotifications() {
-    localStorage.setItem('notifications', JSON.stringify(notifications.value))
-}
-function addNotification(message) {
-    notifications.value.unshift({
-        id: Date.now(),
-        message,
-        time: new Date().toISOString(),
-        read: false
-    })
-    saveNotifications()
-}
-function markAllRead() {
-    notifications.value.forEach(n => n.read = true)
-    saveNotifications()
-}
-function toggleNotificationPopup() {
-    showNotificationPopup.value = !showNotificationPopup.value
-}
-// Lắng nghe sự kiện toàn cục để nhận thông báo mới
-function handleNewNotification(e) {
-    addNotification(e.detail.message)
-}
-
 onMounted(() => {
     updateTime()
     timer = setInterval(updateTime, 1000)
-    loadNotifications()
-    window.addEventListener('new-notification', handleNewNotification)
 })
 onUnmounted(() => {
     if (timer) clearInterval(timer)
-    window.removeEventListener('new-notification', handleNewNotification)
 })
 
 // Lấy thông tin user hiện tại
@@ -146,8 +107,6 @@ const handleLogout = () => {
 const showProfile = () => {
     toast.info('Tính năng này sẽ được phát triển sau!')
 }
-
-window.dispatchEvent(new CustomEvent('new-notification', { detail: { message: 'Bạn vừa thêm giao dịch mới!' } }))
 </script>
 
 <style scoped>
