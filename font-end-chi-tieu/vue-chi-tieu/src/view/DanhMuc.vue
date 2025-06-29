@@ -1,6 +1,6 @@
 <template>
     <div class="danhmuc-container">
-             
+
         <form @submit.prevent="handleSubmit" class="form-card">
             <h2 class="form-title">Thêm Danh Mục</h2>
             <div class="form-group">
@@ -21,9 +21,24 @@
                     <emoji-picker @emoji-click="onEmojiClick" />
                 </div>
             </div>
+
+            <!-- Thêm dropdown chọn hũ chi tiêu -->
+            <div class="form-group">
+                <label>Gắn với hũ chi tiêu (tùy chọn)</label>
+                <select v-model="form.moneyJarId" class="input">
+                    <option value="">Không gắn hũ nào</option>
+                    <option v-for="jar in moneyJars" :key="jar.id" :value="jar.id" :style="{ color: jar.color }">
+                        {{ jar.shortcode }} - {{ jar.jarDisplayName }} ({{ jar.percentage }}%)
+                    </option>
+                </select>
+                <small class="form-help">
+                    Chọn hũ để tự động phân loại giao dịch thuộc danh mục này
+                </small>
+            </div>
+
             <button type="submit" class="btn-submit">Lưu danh mục</button>
         </form>
-        
+
 
         <div class="table-section">
             <h3 class="table-title">Danh sách Danh Mục</h3>
@@ -34,6 +49,7 @@
                             <th>#</th>
                             <th>Biểu tượng</th>
                             <th>Tên danh mục</th>
+                            <th>Hũ chi tiêu</th>
                             <th>User Name</th>
                         </tr>
                     </thead>
@@ -42,10 +58,17 @@
                             <td>{{ idx + 1 }}</td>
                             <td class="emoji-cell">{{ cat.icon }}</td>
                             <td>{{ cat.name }}</td>
+                            <td>
+                                <span v-if="cat.moneyJar" class="jar-badge"
+                                    :style="{ backgroundColor: cat.moneyJar.color }">
+                                    {{ cat.moneyJar.shortcode }} - {{ cat.moneyJar.jarDisplayName }}
+                                </span>
+                                <span v-else class="no-jar">Chưa gắn</span>
+                            </td>
                             <td>{{ cat.userName }}</td>
                         </tr>
                         <tr v-if="categories.length === 0">
-                            <td colspan="4" class="text-center empty-row">Chưa có danh mục nào.</td>
+                            <td colspan="5" class="text-center empty-row">Chưa có danh mục nào.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -54,17 +77,19 @@
     </div>
 </template>
 
-// ...existing code...
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import 'emoji-picker-element'
 import CategoryService from '../service/categoryService'
+import moneyJarsService from '../service/moneyJarsService'
 
 const form = ref({
     name: '',
-    icon: ''
+    icon: '',
+    moneyJarId: ''
 })
 const categories = ref([])
+const moneyJars = ref([])
 const showEmoji = ref(false)
 
 const fetchCategories = async () => {
@@ -73,6 +98,15 @@ const fetchCategories = async () => {
         categories.value = Array.isArray(response) ? response : (response.data || [])
     } catch (err) {
         categories.value = []
+    }
+}
+
+const fetchMoneyJars = async () => {
+    try {
+        const response = await moneyJarsService.getMoneyJars()
+        moneyJars.value = response || []
+    } catch (err) {
+        moneyJars.value = []
     }
 }
 
@@ -90,7 +124,7 @@ const handleSubmit = async () => {
         }
         await CategoryService.createCategory(data)
         alert('Danh mục đã được lưu!')
-        form.value = { name: '', icon: '' }
+        form.value = { name: '', icon: '', moneyJarId: '' }
         fetchCategories()
     } catch (err) {
         alert('Không thể lưu danh mục.')
@@ -112,6 +146,7 @@ const handleClickOutside = (e) => {
 
 onMounted(() => {
     fetchCategories()
+    fetchMoneyJars()
     document.addEventListener('click', handleClickOutside)
 })
 
@@ -119,8 +154,6 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside)
 })
 </script>
-// ...existing code...
-
 
 <style scoped>
 .danhmuc-container {
@@ -163,6 +196,13 @@ onBeforeUnmount(() => {
     border-color: #4f46e5;
 }
 
+.form-help {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    display: block;
+}
+
 .emoji-input-group {
     display: flex;
     align-items: center;
@@ -198,65 +238,56 @@ onBeforeUnmount(() => {
     top: 48px;
     left: 0;
     box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.12);
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fff;
-    width: 320px;
-    max-width: 95vw;
+    border-radius: 8px;
 }
 
 .btn-submit {
-    background: linear-gradient(90deg, #6366f1, #4f46e5);
-    color: #fff;
-    font-weight: 600;
+    width: 100%;
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    color: white;
     border: none;
     border-radius: 8px;
-    padding: 12px 0;
-    width: 100%;
-    font-size: 1.1rem;
-    margin-top: 0.5rem;
-    box-shadow: 0 2px 8px 0 rgba(80, 80, 180, 0.08);
-    transition: background 0.2s;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 .btn-submit:hover {
-    background: linear-gradient(90deg, #4f46e5, #6366f1);
+    transform: translateY(-1px);
 }
 
 .table-section {
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.08);
-    padding: 1.5rem 1rem;
+    padding: 1.5rem;
 }
 
 .table-title {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #4f46e5;
-}
-
-.table-responsive {
-    overflow-x: auto;
+    color: #374151;
 }
 
 .danhmuc-table {
     width: 100%;
     border-collapse: collapse;
-    background: #f9fafb;
-    border-radius: 12px;
-    overflow: hidden;
 }
 
 .danhmuc-table th,
 .danhmuc-table td {
-    padding: 10px 12px;
+    padding: 12px;
     text-align: left;
+    border-bottom: 1px solid #f3f4f6;
 }
 
-.danhmuc-table thead {
-    background: #e0e7ff;
+.danhmuc-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
 }
 
 .emoji-cell {
@@ -265,21 +296,42 @@ onBeforeUnmount(() => {
 }
 
 .empty-row {
-    color: #b0b0b0;
+    color: #6b7280;
     font-style: italic;
 }
 
-@media (max-width: 600px) {
+.jar-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+}
+
+.no-jar {
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .danhmuc-container {
+        padding: 1rem;
+    }
 
     .form-card,
     .table-section {
-        padding: 1rem 0.3rem;
+        padding: 1rem;
     }
 
-    .emoji-picker-wrapper {
-        left: 0;
-        width: 98vw;
-        min-width: 220px;
+    .danhmuc-table {
+        font-size: 0.9rem;
+    }
+
+    .danhmuc-table th,
+    .danhmuc-table td {
+        padding: 8px;
     }
 }
 </style>

@@ -22,6 +22,13 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Key số (1-5)</label>
+                    <input v-model="formData.shortcode" type="text" class="form-control"
+                        placeholder="Key số để phân loại nhanh (1, 2, 3, 4, 5)" maxlength="1">
+                    <small class="form-help">Key này sẽ được dùng để tự động phân loại giao dịch</small>
+                </div>
+
+                <div class="form-group">
                     <label>Màu sắc</label>
                     <input v-model="formData.color" type="color" class="form-control color-picker">
                 </div>
@@ -81,6 +88,7 @@ const emit = defineEmits(['close', 'updated'])
 const formData = ref({
     jarDisplayName: '',
     icon: '',
+    shortcode: '',
     color: '#007bff',
     percentage: 0,
     description: '',
@@ -91,6 +99,7 @@ const formData = ref({
 const canUpdate = computed(() => {
     return formData.value.jarDisplayName &&
         formData.value.icon &&
+        formData.value.shortcode &&
         formData.value.color &&
         formData.value.percentage >= 0 &&
         formData.value.percentage <= 100
@@ -102,6 +111,7 @@ watch(() => props.jar, (newJar) => {
         formData.value = {
             jarDisplayName: newJar.jarDisplayName || '',
             icon: newJar.icon || '',
+            shortcode: newJar.shortcode || '',
             color: newJar.color || '#007bff',
             percentage: newJar.percentage || 0,
             description: newJar.description || '',
