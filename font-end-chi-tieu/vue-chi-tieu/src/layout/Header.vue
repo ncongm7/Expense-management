@@ -15,8 +15,9 @@
             </div>
             <div class="d-flex align-items-center ms-auto gap-3">
                 <NotificationManager />
-                <button class="btn btn-icon" title="Đồng bộ">
-                    <i class="bi bi-cloud-arrow-up fs-5"></i>
+                <button class="btn btn-icon" :class="{ 'syncing': isSyncing }"
+                    :style="{ background: isSyncing ? '#e0f7fa' : '' }" @click="toggleSync" title="Đồng bộ">
+                    <i :class="['bi', isSyncing ? 'bi-arrow-repeat animate-spin' : 'bi-cloud-arrow-up', 'fs-5']"></i>
                 </button>
                 <div class="dropdown">
                     <button
@@ -57,6 +58,7 @@ defineEmits(['toggle-menu'])
 
 const now = ref('')
 let timer = null
+const isSyncing = ref(false)
 
 onMounted(() => {
     updateTime()
@@ -106,6 +108,15 @@ const handleLogout = () => {
  */
 const showProfile = () => {
     toast.info('Tính năng này sẽ được phát triển sau!')
+}
+
+const toggleSync = () => {
+    isSyncing.value = !isSyncing.value
+    if (isSyncing.value) {
+        toast.success('Đã bật đồng bộ tự động!')
+    } else {
+        toast.info('Đã tắt đồng bộ tự động!')
+    }
 }
 </script>
 
@@ -177,6 +188,21 @@ const showProfile = () => {
     100% {
         opacity: 1;
     }
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.btn-icon.syncing {
+    background: #e0f7fa !important;
+    color: #007bff !important;
 }
 
 @media (max-width: 768px) {

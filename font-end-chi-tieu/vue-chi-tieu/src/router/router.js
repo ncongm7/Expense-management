@@ -9,6 +9,7 @@ import BaoCao from '../view/BaoCao.vue'
 import CaiDat from '../view/CaiDat.vue'
 import Login from '../view/Login.vue'
 import Overview from '../view/Overview.vue'
+import HuChiTieu from '../view/HuChiTieu.vue'
 
 
 const routes = [
@@ -47,6 +48,12 @@ const routes = [
     path: '/muctieu',
     name: 'MucTieu',
     component: MucTieu,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/huchitieu',
+    name: 'HuChiTieu',
+    component: HuChiTieu,
     meta: { requiresAuth: true }
   },
   {

@@ -1,4 +1,5 @@
 <template>
+   
     <nav class="sidebar bg-white shadow-lg rounded-4 d-flex flex-column p-4 vh-100 position-relative">
         <div class="d-flex flex-column align-items-center mb-4">
             <img src="https://ui-avatars.com/api/?name=QLCT&background=0d6efd&color=fff" alt="Avatar"
@@ -19,6 +20,11 @@
                     <i class="bi bi-list-ul me-3 fs-4"></i> Danh mục
                 </router-link>
             </li>
+            <li class="nav-item">
+      <router-link to="/huchitieu" class="nav-link menu-link" active-class="active" @click="$emit('menu-selected')">
+        <i class="bi bi-piggy-bank me-3 fs-4" style="color: #f59e42;"></i> Hũ Chi Tiêu
+      </router-link>
+    </li>
             <li class="nav-item">
                 <router-link to="/ngansach" class="nav-link menu-link" active-class="active"
                     @click="$emit('menu-selected')">
