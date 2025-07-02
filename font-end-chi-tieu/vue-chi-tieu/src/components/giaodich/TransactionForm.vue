@@ -21,7 +21,7 @@
                     <!-- Số tiền -->
                     <div class="col-md-6">
                         <label class="form-label">Số tiền</label>
-                        <input  v-model="formData.amount" type="number" class="form-control"
+                        <input v-model="formData.amount" type="text" class="form-control"
                             :class="{ 'is-invalid': errors.amount }" placeholder="Nhập số tiền"
                             @input="handleAmountInput" @blur="handleAmountBlur" required />
                         <div v-if="errors.amount" class="invalid-feedback">{{ errors.amount }}</div>
@@ -196,7 +196,7 @@ const handleSubmit = async () => {
 
         toast.success('Giao dịch đã được thêm thành công!');
     } catch (err) {
-        console.error('Lỗi khi thêm giao dịch:', err);
+
         toast.error('Có lỗi xảy ra khi thêm giao dịch!');
     }
 };

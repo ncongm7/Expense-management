@@ -58,6 +58,7 @@ class TransactionService {
    * @returns {Promise<Object>} Giao dịch đã tạo
    */
   async createTransaction(formData) {
+    console.log(formData)
     try {
       const response = await apiClient.post('/transactions/post', formData)
 

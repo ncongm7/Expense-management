@@ -120,7 +120,7 @@ const handleSubmit = async () => {
         }
         const data = {
             ...form.value,
-            user: { id: userId }
+            userId: userId
         }
         await CategoryService.createCategory(data)
         alert('Danh mục đã được lưu!')

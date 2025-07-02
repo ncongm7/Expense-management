@@ -223,7 +223,7 @@ class MoneyJarsService {
    */
   async getJarTransactions(jarId) {
     try {
-      const response = await apiClient.get(`/money-jars/${jarId}/transactions`)
+      const response = await apiClient.get(`/transactions/jars/hien-thi/${jarId}`)
       return response.data
     } catch (error) {
       console.error('Lỗi lấy lịch sử hũ:', error)

@@ -45,8 +45,7 @@ import TransactionDetailModal from '../components/giaodich/TransactionDetailModa
 import TransactionEditModal from '../components/giaodich/TransactionEditModal.vue';
 import TransactionDeleteModal from '../components/giaodich/TransactionDeleteModal.vue';
 import ReceiptViewModal from '../components/giaodich/ReceiptViewModal.vue';
-import axios from 'axios';
-import apiClient from '@/service/axiosConfig.js';
+
 import notificationService from '@/service/notificationService.js';
 
 const categories = ref([]);
@@ -117,7 +116,7 @@ const handleTransactionAdded = async (formData) => {
     });
     toast.success("Thêm giao dịch thành công!");
   } catch (err) {
-    console.error('Lỗi lưu giao dịch:', err);
+    
     toast.error("Thêm giao dịch thất bại!");
   }
 };
